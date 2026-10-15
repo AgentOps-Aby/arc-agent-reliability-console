@@ -1,0 +1,78 @@
+
+=== ARC synthetic dataset ===
+runs 5,122 | tasks 4,407 | steps 41,114 | 2026-09-01 .. 2026-09-30
+  status completed   4,155
+  status errored       759
+  status timed_out     161
+  status cancelled      47
+
+--- Core metrics by agent (schema/metrics.sql, query 1) vs targets ---
+agent           tasks  1st-try     TSR  target  retry-rec  $/success     cap  budget used
+code-fix          833    78.5%   85.1%     83%      42.0%     1.2598   1.000          88%
+invoice-entry    1157    89.5%   94.7%     97%      59.4%     0.0343   0.040         176%
+support-triage   1381    92.5%   95.9%     92%      57.3%     0.0367   0.045          52%
+web-research      989    81.4%   92.1%     93%      68.4%     0.4090   0.450         113%
+
+--- True failure mix (ground truth, failed runs) ---
+  invalid_tool_args       200   19.3%
+  timeout                 161   15.6%
+  rate_limit              127   12.3%
+  tool_error              123   11.9%
+  silent_wrong_output     109   10.5%
+  loop_max_steps          104   10.0%
+  context_overflow        100    9.7%
+  output_parse_error       50    4.8%
+  unknown                  45    4.3%
+  guardrail_block          16    1.5%
+
+--- P1 bad deploy: web-research first-attempt timeout rate by deploy ---
+  web-research@v17     runs   391  timeout   2.0%
+  web-research@v18     runs   109  timeout  33.9%
+  web-research@v19     runs   506  timeout   2.4%
+
+--- P2 Retry Recovery Rate by TRUE category of the first attempt (tasks that were retried) ---
+  output_parse_error     retried tasks   34  recovered  94.1%  retry spend $  11.27
+  tool_error             retried tasks   85  recovered  89.4%  retry spend $  27.71
+  rate_limit             retried tasks   84  recovered  86.9%  retry spend $  14.87
+  timeout                retried tasks   80  recovered  63.8%  retry spend $  28.94
+  unknown                retried tasks   23  recovered  56.5%  retry spend $   6.22
+  loop_max_steps         retried tasks   43  recovered  30.2%  retry spend $ 127.32
+  context_overflow       retried tasks   36  recovered  13.9%  retry spend $  64.01
+  silent_wrong_output    retried tasks    9  recovered  11.1%  retry spend $   2.07
+  invalid_tool_args      retried tasks   73  recovered   5.5%  retry spend $  21.07
+  guardrail_block        retried tasks    2  recovered   0.0%  retry spend $   0.05
+    timeout outside bad deploy     retried tasks   46  recovered  84.8%
+    timeout during bad deploy (v18)  retried tasks   34  recovered  35.3%
+
+--- P3 task success rate by task type (eventual, finished tasks) ---
+  invoice-entry  vendor_onboarding    tasks  178  TSR  75.3%
+  code-fix       test_generation      tasks  197  TSR  83.8%
+  code-fix       dependency_upgrade   tasks  190  TSR  84.2%
+  code-fix       bug_fix              tasks  337  TSR  84.3%
+  web-research   market_scan          tasks  241  TSR  90.5%
+  code-fix       lint_cleanup         tasks  109  TSR  91.7%
+  web-research   competitor_brief     tasks  318  TSR  92.1%
+  web-research   fact_check           tasks  430  TSR  93.0%
+  support-triage order_status         tasks  421  TSR  95.0%
+  support-triage refund_request       tasks  482  TSR  95.4%
+  support-triage account_update       tasks  258  TSR  96.5%
+  invoice-entry  po_match             tasks  400  TSR  97.2%
+  support-triage escalation_summary   tasks  220  TSR  97.7%
+  invoice-entry  invoice_capture      tasks  579  TSR  99.0%
+
+--- P4 code-fix: context_overflow share of first attempts, and avg input tokens per run, by 6-day period ---
+  days  1-6   runs  169  overflow   1.8%  avg input tokens   223,661
+  days  7-12  runs  162  overflow   1.9%  avg input tokens   239,874
+  days 13-18  runs  208  overflow   3.8%  avg input tokens   244,817
+  days 19-24  runs  159  overflow   3.8%  avg input tokens   275,831
+  days 25-30  runs  143  overflow   6.3%  avg input tokens   282,427
+
+--- Bonus ---
+  B1 month-end burst window: 111 runs, 51 of them retries
+  B2 wrong outputs hidden as unverified successes: 26
+
+--- Classifier dev/test split (Step 6) ---
+  dev   runs  4077  failed  810  with held-out message    0
+  test  runs  1045  failed  225  with held-out message  102
+
+Wrote /mnt/attach/outputs/arc/data/runs.csv, steps.csv, ground_truth.csv, agent_targets.csv, arc.db  (seed 42)

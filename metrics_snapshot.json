@@ -1,0 +1,1535 @@
+{
+  "success_by_agent": [
+    {
+      "grp": "code-fix",
+      "tasks": 833,
+      "fasr": 78.5,
+      "tsr": 85.1,
+      "vtsr": 80.2,
+      "retry_lift_pts": 6.6
+    },
+    {
+      "grp": "invoice-entry",
+      "tasks": 1157,
+      "fasr": 89.5,
+      "tsr": 94.7,
+      "vtsr": 87.5,
+      "retry_lift_pts": 5.2
+    },
+    {
+      "grp": "support-triage",
+      "tasks": 1381,
+      "fasr": 92.5,
+      "tsr": 95.9,
+      "vtsr": 67.6,
+      "retry_lift_pts": 3.4
+    },
+    {
+      "grp": "web-research",
+      "tasks": 989,
+      "fasr": 81.4,
+      "tsr": 92.1,
+      "vtsr": 51.7,
+      "retry_lift_pts": 10.7
+    }
+  ],
+  "success_fleet": {
+    "grp": "fleet",
+    "tasks": 4360,
+    "fasr": 86.5,
+    "tsr": 92.7,
+    "vtsr": 71.7,
+    "retry_lift_pts": 6.2
+  },
+  "failure_mix": [
+    {
+      "agent": "code-fix",
+      "category": "context_overflow",
+      "failed_runs": 75,
+      "share_pct": 22.1
+    },
+    {
+      "agent": "code-fix",
+      "category": "loop_max_steps",
+      "failed_runs": 62,
+      "share_pct": 18.2
+    },
+    {
+      "agent": "code-fix",
+      "category": "silent_wrong_output",
+      "failed_runs": 53,
+      "share_pct": 15.6
+    },
+    {
+      "agent": "code-fix",
+      "category": "invalid_tool_args",
+      "failed_runs": 51,
+      "share_pct": 15.0
+    },
+    {
+      "agent": "code-fix",
+      "category": "timeout",
+      "failed_runs": 36,
+      "share_pct": 10.6
+    },
+    {
+      "agent": "code-fix",
+      "category": "tool_error",
+      "failed_runs": 30,
+      "share_pct": 8.8
+    },
+    {
+      "agent": "code-fix",
+      "category": "rate_limit",
+      "failed_runs": 12,
+      "share_pct": 3.5
+    },
+    {
+      "agent": "code-fix",
+      "category": "output_parse_error",
+      "failed_runs": 11,
+      "share_pct": 3.2
+    },
+    {
+      "agent": "code-fix",
+      "category": "unknown",
+      "failed_runs": 9,
+      "share_pct": 2.6
+    },
+    {
+      "agent": "code-fix",
+      "category": "guardrail_block",
+      "failed_runs": 1,
+      "share_pct": 0.3
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "invalid_tool_args",
+      "failed_runs": 75,
+      "share_pct": 34.7
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "rate_limit",
+      "failed_runs": 64,
+      "share_pct": 29.6
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "output_parse_error",
+      "failed_runs": 23,
+      "share_pct": 10.6
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "silent_wrong_output",
+      "failed_runs": 21,
+      "share_pct": 9.7
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "tool_error",
+      "failed_runs": 15,
+      "share_pct": 6.9
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "timeout",
+      "failed_runs": 6,
+      "share_pct": 2.8
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "context_overflow",
+      "failed_runs": 5,
+      "share_pct": 2.3
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "loop_max_steps",
+      "failed_runs": 5,
+      "share_pct": 2.3
+    },
+    {
+      "agent": "invoice-entry",
+      "category": "unknown",
+      "failed_runs": 2,
+      "share_pct": 0.9
+    },
+    {
+      "agent": "support-triage",
+      "category": "invalid_tool_args",
+      "failed_runs": 54,
+      "share_pct": 30.9
+    },
+    {
+      "agent": "support-triage",
+      "category": "tool_error",
+      "failed_runs": 24,
+      "share_pct": 13.7
+    },
+    {
+      "agent": "support-triage",
+      "category": "rate_limit",
+      "failed_runs": 22,
+      "share_pct": 12.6
+    },
+    {
+      "agent": "support-triage",
+      "category": "unknown",
+      "failed_runs": 22,
+      "share_pct": 12.6
+    },
+    {
+      "agent": "support-triage",
+      "category": "silent_wrong_output",
+      "failed_runs": 20,
+      "share_pct": 11.4
+    },
+    {
+      "agent": "support-triage",
+      "category": "guardrail_block",
+      "failed_runs": 8,
+      "share_pct": 4.6
+    },
+    {
+      "agent": "support-triage",
+      "category": "output_parse_error",
+      "failed_runs": 8,
+      "share_pct": 4.6
+    },
+    {
+      "agent": "support-triage",
+      "category": "loop_max_steps",
+      "failed_runs": 6,
+      "share_pct": 3.4
+    },
+    {
+      "agent": "support-triage",
+      "category": "timeout",
+      "failed_runs": 6,
+      "share_pct": 3.4
+    },
+    {
+      "agent": "support-triage",
+      "category": "context_overflow",
+      "failed_runs": 5,
+      "share_pct": 2.9
+    },
+    {
+      "agent": "web-research",
+      "category": "timeout",
+      "failed_runs": 113,
+      "share_pct": 37.2
+    },
+    {
+      "agent": "web-research",
+      "category": "tool_error",
+      "failed_runs": 55,
+      "share_pct": 18.1
+    },
+    {
+      "agent": "web-research",
+      "category": "loop_max_steps",
+      "failed_runs": 31,
+      "share_pct": 10.2
+    },
+    {
+      "agent": "web-research",
+      "category": "rate_limit",
+      "failed_runs": 27,
+      "share_pct": 8.9
+    },
+    {
+      "agent": "web-research",
+      "category": "invalid_tool_args",
+      "failed_runs": 17,
+      "share_pct": 5.6
+    },
+    {
+      "agent": "web-research",
+      "category": "unknown",
+      "failed_runs": 16,
+      "share_pct": 5.3
+    },
+    {
+      "agent": "web-research",
+      "category": "context_overflow",
+      "failed_runs": 15,
+      "share_pct": 4.9
+    },
+    {
+      "agent": "web-research",
+      "category": "silent_wrong_output",
+      "failed_runs": 15,
+      "share_pct": 4.9
+    },
+    {
+      "agent": "web-research",
+      "category": "output_parse_error",
+      "failed_runs": 8,
+      "share_pct": 2.6
+    },
+    {
+      "agent": "web-research",
+      "category": "guardrail_block",
+      "failed_runs": 7,
+      "share_pct": 2.3
+    }
+  ],
+  "failure_mix_fleet": [
+    {
+      "category": "invalid_tool_args",
+      "failed_runs": 197,
+      "share_pct": 19.0
+    },
+    {
+      "category": "timeout",
+      "failed_runs": 161,
+      "share_pct": 15.6
+    },
+    {
+      "category": "rate_limit",
+      "failed_runs": 125,
+      "share_pct": 12.1
+    },
+    {
+      "category": "tool_error",
+      "failed_runs": 124,
+      "share_pct": 12.0
+    },
+    {
+      "category": "silent_wrong_output",
+      "failed_runs": 109,
+      "share_pct": 10.5
+    },
+    {
+      "category": "loop_max_steps",
+      "failed_runs": 104,
+      "share_pct": 10.0
+    },
+    {
+      "category": "context_overflow",
+      "failed_runs": 100,
+      "share_pct": 9.7
+    },
+    {
+      "category": "output_parse_error",
+      "failed_runs": 50,
+      "share_pct": 4.8
+    },
+    {
+      "category": "unknown",
+      "failed_runs": 49,
+      "share_pct": 4.7
+    },
+    {
+      "category": "guardrail_block",
+      "failed_runs": 16,
+      "share_pct": 1.5
+    }
+  ],
+  "retry_by_category": [
+    {
+      "category": "output_parse_error",
+      "retried_tasks": 34,
+      "recovered": 32,
+      "recovery_pct": 94.1,
+      "retry_spend": 11.27,
+      "wasted_retry_cost": 0.15
+    },
+    {
+      "category": "tool_error",
+      "retried_tasks": 85,
+      "recovered": 76,
+      "recovery_pct": 89.4,
+      "retry_spend": 27.71,
+      "wasted_retry_cost": 5.01
+    },
+    {
+      "category": "rate_limit",
+      "retried_tasks": 83,
+      "recovered": 72,
+      "recovery_pct": 86.7,
+      "retry_spend": 14.83,
+      "wasted_retry_cost": 0.47
+    },
+    {
+      "category": "timeout",
+      "retried_tasks": 80,
+      "recovered": 51,
+      "recovery_pct": 63.7,
+      "retry_spend": 28.94,
+      "wasted_retry_cost": 8.05
+    },
+    {
+      "category": "unknown",
+      "retried_tasks": 25,
+      "recovered": 14,
+      "recovery_pct": 56.0,
+      "retry_spend": 6.27,
+      "wasted_retry_cost": 4.41
+    },
+    {
+      "category": "loop_max_steps",
+      "retried_tasks": 43,
+      "recovered": 13,
+      "recovery_pct": 30.2,
+      "retry_spend": 127.32,
+      "wasted_retry_cost": 116.18
+    },
+    {
+      "category": "context_overflow",
+      "retried_tasks": 36,
+      "recovered": 5,
+      "recovery_pct": 13.9,
+      "retry_spend": 64.01,
+      "wasted_retry_cost": 58.61
+    },
+    {
+      "category": "silent_wrong_output",
+      "retried_tasks": 9,
+      "recovered": 1,
+      "recovery_pct": 11.1,
+      "retry_spend": 2.07,
+      "wasted_retry_cost": 2.06
+    },
+    {
+      "category": "invalid_tool_args",
+      "retried_tasks": 72,
+      "recovered": 4,
+      "recovery_pct": 5.6,
+      "retry_spend": 21.06,
+      "wasted_retry_cost": 19.12
+    },
+    {
+      "category": "guardrail_block",
+      "retried_tasks": 2,
+      "recovered": 0,
+      "recovery_pct": 0.0,
+      "retry_spend": 0.05,
+      "wasted_retry_cost": 0.05
+    }
+  ],
+  "retry_by_agent": [
+    {
+      "agent": "code-fix",
+      "retried_tasks": 131,
+      "recovery_pct": 42.0,
+      "retry_spend": 220.08,
+      "wasted_retry_cost": 170.42
+    },
+    {
+      "agent": "invoice-entry",
+      "retried_tasks": 101,
+      "recovery_pct": 59.4,
+      "retry_spend": 4.95,
+      "wasted_retry_cost": 2.61
+    },
+    {
+      "agent": "support-triage",
+      "retried_tasks": 82,
+      "recovery_pct": 57.3,
+      "retry_spend": 4.49,
+      "wasted_retry_cost": 2.83
+    },
+    {
+      "agent": "web-research",
+      "retried_tasks": 155,
+      "recovery_pct": 68.4,
+      "retry_spend": 74.02,
+      "wasted_retry_cost": 38.25
+    }
+  ],
+  "retry_totals": {
+    "total_spend": 1351.96,
+    "retry_spend": 303.54,
+    "wasted_retry_cost": 214.11,
+    "wasted_share_of_retry_pct": 70.5,
+    "wasted_share_of_total_pct": 15.8
+  },
+  "cost_per_success": [
+    {
+      "agent": "code-fix",
+      "spend": 893.21,
+      "successes": 709,
+      "cost_per_success": 1.2598,
+      "cap": 1,
+      "cost_per_task": 1.0723
+    },
+    {
+      "agent": "invoice-entry",
+      "spend": 37.57,
+      "successes": 1096,
+      "cost_per_success": 0.0343,
+      "cap": 0.04,
+      "cost_per_task": 0.0325
+    },
+    {
+      "agent": "support-triage",
+      "spend": 48.54,
+      "successes": 1324,
+      "cost_per_success": 0.0367,
+      "cap": 0.045,
+      "cost_per_task": 0.0351
+    },
+    {
+      "agent": "web-research",
+      "spend": 372.64,
+      "successes": 911,
+      "cost_per_success": 0.409,
+      "cap": 0.45,
+      "cost_per_task": 0.3768
+    }
+  ],
+  "cost_per_success_trend": [
+    {
+      "agent": "code-fix",
+      "period": 1,
+      "cost_per_success": 1.1746
+    },
+    {
+      "agent": "code-fix",
+      "period": 2,
+      "cost_per_success": 1.2409
+    },
+    {
+      "agent": "code-fix",
+      "period": 3,
+      "cost_per_success": 1.2097
+    },
+    {
+      "agent": "code-fix",
+      "period": 4,
+      "cost_per_success": 1.3305
+    },
+    {
+      "agent": "code-fix",
+      "period": 5,
+      "cost_per_success": 1.3745
+    },
+    {
+      "agent": "invoice-entry",
+      "period": 1,
+      "cost_per_success": 0.041
+    },
+    {
+      "agent": "invoice-entry",
+      "period": 2,
+      "cost_per_success": 0.0372
+    },
+    {
+      "agent": "invoice-entry",
+      "period": 3,
+      "cost_per_success": 0.031
+    },
+    {
+      "agent": "invoice-entry",
+      "period": 4,
+      "cost_per_success": 0.0297
+    },
+    {
+      "agent": "invoice-entry",
+      "period": 5,
+      "cost_per_success": 0.0335
+    },
+    {
+      "agent": "support-triage",
+      "period": 1,
+      "cost_per_success": 0.0383
+    },
+    {
+      "agent": "support-triage",
+      "period": 2,
+      "cost_per_success": 0.0356
+    },
+    {
+      "agent": "support-triage",
+      "period": 3,
+      "cost_per_success": 0.0339
+    },
+    {
+      "agent": "support-triage",
+      "period": 4,
+      "cost_per_success": 0.0366
+    },
+    {
+      "agent": "support-triage",
+      "period": 5,
+      "cost_per_success": 0.0394
+    },
+    {
+      "agent": "web-research",
+      "period": 1,
+      "cost_per_success": 0.3969
+    },
+    {
+      "agent": "web-research",
+      "period": 2,
+      "cost_per_success": 0.4363
+    },
+    {
+      "agent": "web-research",
+      "period": 3,
+      "cost_per_success": 0.4298
+    },
+    {
+      "agent": "web-research",
+      "period": 4,
+      "cost_per_success": 0.4019
+    },
+    {
+      "agent": "web-research",
+      "period": 5,
+      "cost_per_success": 0.3768
+    }
+  ],
+  "latency": [
+    {
+      "agent": "code-fix",
+      "run_p50_s": 43.0,
+      "run_p95_s": 88.0,
+      "task_p50_s": 47.0,
+      "task_p95_s": 149.0
+    },
+    {
+      "agent": "invoice-entry",
+      "run_p50_s": 9.0,
+      "run_p95_s": 16.0,
+      "task_p50_s": 10.0,
+      "task_p95_s": 24.0
+    },
+    {
+      "agent": "support-triage",
+      "run_p50_s": 9.0,
+      "run_p95_s": 15.0,
+      "task_p50_s": 9.0,
+      "task_p95_s": 17.0
+    },
+    {
+      "agent": "web-research",
+      "run_p50_s": 23.0,
+      "run_p95_s": 38.0,
+      "task_p50_s": 24.0,
+      "task_p95_s": 114.0
+    }
+  ],
+  "web_fetch_latency_by_deploy": [
+    {
+      "deploy": "web-research@v17",
+      "calls": 638,
+      "p50_ms": 1751,
+      "p95_ms": 3904
+    },
+    {
+      "deploy": "web-research@v18",
+      "calls": 161,
+      "p50_ms": 11166,
+      "p95_ms": 27521
+    },
+    {
+      "deploy": "web-research@v19",
+      "calls": 805,
+      "p50_ms": 1831,
+      "p95_ms": 4035
+    }
+  ],
+  "max_steps": [
+    {
+      "agent": "code-fix",
+      "runs": 1049,
+      "at_max": 62,
+      "at_max_pct": 5.91,
+      "at_max_cost": 182.19,
+      "at_max_cost_pct": 20.4
+    },
+    {
+      "agent": "invoice-entry",
+      "runs": 1312,
+      "at_max": 5,
+      "at_max_pct": 0.38,
+      "at_max_cost": 1.43,
+      "at_max_cost_pct": 3.8
+    },
+    {
+      "agent": "support-triage",
+      "runs": 1499,
+      "at_max": 6,
+      "at_max_pct": 0.4,
+      "at_max_cost": 1.83,
+      "at_max_cost_pct": 3.8
+    },
+    {
+      "agent": "web-research",
+      "runs": 1215,
+      "at_max": 31,
+      "at_max_pct": 2.55,
+      "at_max_cost": 51.54,
+      "at_max_cost_pct": 13.8
+    }
+  ],
+  "slo": [
+    {
+      "agent": "code-fix",
+      "tsr": 85.1,
+      "target": 83,
+      "budget_used_pct": 88.0
+    },
+    {
+      "agent": "invoice-entry",
+      "tsr": 94.7,
+      "target": 97,
+      "budget_used_pct": 176.0
+    },
+    {
+      "agent": "support-triage",
+      "tsr": 95.9,
+      "target": 92,
+      "budget_used_pct": 52.0
+    },
+    {
+      "agent": "web-research",
+      "tsr": 92.1,
+      "target": 93,
+      "budget_used_pct": 113.0
+    }
+  ],
+  "verification": [
+    {
+      "agent": "code-fix",
+      "check_coverage_pct": 94.6,
+      "unverified_share_pct": 5.8
+    },
+    {
+      "agent": "invoice-entry",
+      "check_coverage_pct": 92.5,
+      "unverified_share_pct": 7.7
+    },
+    {
+      "agent": "support-triage",
+      "check_coverage_pct": 71.1,
+      "unverified_share_pct": 29.5
+    },
+    {
+      "agent": "web-research",
+      "check_coverage_pct": 56.9,
+      "unverified_share_pct": 43.9
+    }
+  ],
+  "category_source": "classifier",
+  "burn_rate_daily": [
+    {
+      "agent": "code-fix",
+      "day": "2026-09-01",
+      "burn_1d": 0.78,
+      "burn_7d": 0.78
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-02",
+      "burn_1d": 0.67,
+      "burn_7d": 0.72
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-03",
+      "burn_1d": 0.84,
+      "burn_7d": 0.75
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-04",
+      "burn_1d": 0.76,
+      "burn_7d": 0.75
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-05",
+      "burn_1d": 0.37,
+      "burn_7d": 0.71
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-06",
+      "burn_1d": 1.96,
+      "burn_7d": 0.85
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-07",
+      "burn_1d": 0.53,
+      "burn_7d": 0.79
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-08",
+      "burn_1d": 1.07,
+      "burn_7d": 0.84
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-09",
+      "burn_1d": 1.56,
+      "burn_7d": 1.01
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-10",
+      "burn_1d": 0.63,
+      "burn_7d": 0.98
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-11",
+      "burn_1d": 1.86,
+      "burn_7d": 1.1
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-12",
+      "burn_1d": 0.84,
+      "burn_7d": 1.15
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-13",
+      "burn_1d": 1.09,
+      "burn_7d": 1.06
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-14",
+      "burn_1d": 0.87,
+      "burn_7d": 1.12
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-15",
+      "burn_1d": 0.71,
+      "burn_7d": 1.06
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-16",
+      "burn_1d": 1.05,
+      "burn_7d": 0.97
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-17",
+      "burn_1d": 0.65,
+      "burn_7d": 0.96
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-18",
+      "burn_1d": 0.92,
+      "burn_7d": 0.88
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-19",
+      "burn_1d": 0.53,
+      "burn_7d": 0.86
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-20",
+      "burn_1d": 0.28,
+      "burn_7d": 0.78
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-21",
+      "burn_1d": 1.32,
+      "burn_7d": 0.86
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-22",
+      "burn_1d": 0.55,
+      "burn_7d": 0.84
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-23",
+      "burn_1d": 0.47,
+      "burn_7d": 0.75
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-24",
+      "burn_1d": 0.81,
+      "burn_7d": 0.77
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-25",
+      "burn_1d": 0.59,
+      "burn_7d": 0.72
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-26",
+      "burn_1d": 0.65,
+      "burn_7d": 0.72
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-27",
+      "burn_1d": 0.33,
+      "burn_7d": 0.74
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-28",
+      "burn_1d": 1.34,
+      "burn_7d": 0.68
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-29",
+      "burn_1d": 1.02,
+      "burn_7d": 0.75
+    },
+    {
+      "agent": "code-fix",
+      "day": "2026-09-30",
+      "burn_1d": 1.01,
+      "burn_7d": 0.84
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-01",
+      "burn_1d": 0.88,
+      "burn_7d": 0.88
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-02",
+      "burn_1d": 3.6,
+      "burn_7d": 2.22
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-03",
+      "burn_1d": 3.62,
+      "burn_7d": 2.75
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-04",
+      "burn_1d": 0.69,
+      "burn_7d": 2.17
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-05",
+      "burn_1d": 1.75,
+      "burn_7d": 2.13
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-06",
+      "burn_1d": 0.0,
+      "burn_7d": 1.92
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-07",
+      "burn_1d": 2.86,
+      "burn_7d": 2.06
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-08",
+      "burn_1d": 1.04,
+      "burn_7d": 2.11
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-09",
+      "burn_1d": 3.1,
+      "burn_7d": 2.06
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-10",
+      "burn_1d": 0.74,
+      "burn_7d": 1.52
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-11",
+      "burn_1d": 2.7,
+      "burn_7d": 1.88
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-12",
+      "burn_1d": 3.33,
+      "burn_7d": 2.01
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-13",
+      "burn_1d": 0.0,
+      "burn_7d": 2.0
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-14",
+      "burn_1d": 1.92,
+      "burn_7d": 1.87
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-15",
+      "burn_1d": 0.0,
+      "burn_7d": 1.69
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-16",
+      "burn_1d": 1.45,
+      "burn_7d": 1.41
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-17",
+      "burn_1d": 1.52,
+      "burn_7d": 1.54
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-18",
+      "burn_1d": 0.83,
+      "burn_7d": 1.27
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-19",
+      "burn_1d": 0.0,
+      "burn_7d": 1.02
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-20",
+      "burn_1d": 2.9,
+      "burn_7d": 1.27
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-21",
+      "burn_1d": 0.88,
+      "burn_7d": 1.07
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-22",
+      "burn_1d": 0.0,
+      "burn_7d": 1.05
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-23",
+      "burn_1d": 1.63,
+      "burn_7d": 1.08
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-24",
+      "burn_1d": 0.88,
+      "burn_7d": 0.96
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-25",
+      "burn_1d": 1.11,
+      "burn_7d": 1.01
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-26",
+      "burn_1d": 1.33,
+      "burn_7d": 1.12
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-27",
+      "burn_1d": 3.33,
+      "burn_7d": 1.13
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-28",
+      "burn_1d": 0.51,
+      "burn_7d": 1.01
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-29",
+      "burn_1d": 3.29,
+      "burn_7d": 1.72
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-30",
+      "burn_1d": 3.7,
+      "burn_7d": 2.22
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-01",
+      "burn_1d": 0.69,
+      "burn_7d": 0.69
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-02",
+      "burn_1d": 0.0,
+      "burn_7d": 0.37
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-03",
+      "burn_1d": 0.23,
+      "burn_7d": 0.32
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-04",
+      "burn_1d": 0.49,
+      "burn_7d": 0.36
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-05",
+      "burn_1d": 0.0,
+      "burn_7d": 0.33
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-06",
+      "burn_1d": 0.99,
+      "burn_7d": 0.43
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-07",
+      "burn_1d": 0.25,
+      "burn_7d": 0.4
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-08",
+      "burn_1d": 0.22,
+      "burn_7d": 0.32
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-09",
+      "burn_1d": 0.51,
+      "burn_7d": 0.39
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-10",
+      "burn_1d": 0.82,
+      "burn_7d": 0.5
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-11",
+      "burn_1d": 0.22,
+      "burn_7d": 0.45
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-12",
+      "burn_1d": 1.0,
+      "burn_7d": 0.52
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-13",
+      "burn_1d": 0.76,
+      "burn_7d": 0.49
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-14",
+      "burn_1d": 1.2,
+      "burn_7d": 0.64
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-15",
+      "burn_1d": 0.69,
+      "burn_7d": 0.72
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-16",
+      "burn_1d": 0.0,
+      "burn_7d": 0.62
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-17",
+      "burn_1d": 0.65,
+      "burn_7d": 0.59
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-18",
+      "burn_1d": 0.2,
+      "burn_7d": 0.58
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-19",
+      "burn_1d": 0.5,
+      "burn_7d": 0.55
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-20",
+      "burn_1d": 0.0,
+      "burn_7d": 0.5
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-21",
+      "burn_1d": 0.3,
+      "burn_7d": 0.35
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-22",
+      "burn_1d": 0.27,
+      "burn_7d": 0.28
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-23",
+      "burn_1d": 1.06,
+      "burn_7d": 0.46
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-24",
+      "burn_1d": 0.74,
+      "burn_7d": 0.47
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-25",
+      "burn_1d": 0.44,
+      "burn_7d": 0.53
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-26",
+      "burn_1d": 0.0,
+      "burn_7d": 0.48
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-27",
+      "burn_1d": 0.5,
+      "burn_7d": 0.51
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-28",
+      "burn_1d": 0.21,
+      "burn_7d": 0.48
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-29",
+      "burn_1d": 1.25,
+      "burn_7d": 0.63
+    },
+    {
+      "agent": "support-triage",
+      "day": "2026-09-30",
+      "burn_1d": 0.98,
+      "burn_7d": 0.62
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-01",
+      "burn_1d": 1.88,
+      "burn_7d": 1.88
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-02",
+      "burn_1d": 2.26,
+      "burn_7d": 2.07
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-03",
+      "burn_1d": 0.0,
+      "burn_7d": 1.4
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-04",
+      "burn_1d": 0.0,
+      "burn_7d": 1.1
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-05",
+      "burn_1d": 1.36,
+      "burn_7d": 1.13
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-06",
+      "burn_1d": 0.71,
+      "burn_7d": 1.09
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-07",
+      "burn_1d": 1.47,
+      "burn_7d": 1.15
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-08",
+      "burn_1d": 1.16,
+      "burn_7d": 1.03
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-09",
+      "burn_1d": 0.58,
+      "burn_7d": 0.74
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-10",
+      "burn_1d": 0.66,
+      "burn_7d": 0.83
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-11",
+      "burn_1d": 0.51,
+      "burn_7d": 0.9
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-12",
+      "burn_1d": 3.25,
+      "burn_7d": 1.08
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-13",
+      "burn_1d": 3.4,
+      "burn_7d": 1.32
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-14",
+      "burn_1d": 4.64,
+      "burn_7d": 1.85
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-15",
+      "burn_1d": 2.5,
+      "burn_7d": 2.06
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-16",
+      "burn_1d": 0.84,
+      "burn_7d": 2.19
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-17",
+      "burn_1d": 0.45,
+      "burn_7d": 2.24
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-18",
+      "burn_1d": 0.33,
+      "burn_7d": 2.09
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-19",
+      "burn_1d": 0.79,
+      "burn_7d": 1.88
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-20",
+      "burn_1d": 0.0,
+      "burn_7d": 1.59
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-21",
+      "burn_1d": 1.7,
+      "burn_7d": 1.07
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-22",
+      "burn_1d": 0.0,
+      "burn_7d": 0.62
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-23",
+      "burn_1d": 0.0,
+      "burn_7d": 0.51
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-24",
+      "burn_1d": 0.87,
+      "burn_7d": 0.57
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-25",
+      "burn_1d": 0.41,
+      "burn_7d": 0.59
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-26",
+      "burn_1d": 0.71,
+      "burn_7d": 0.58
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-27",
+      "burn_1d": 0.84,
+      "burn_7d": 0.65
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-28",
+      "burn_1d": 0.68,
+      "burn_7d": 0.46
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-29",
+      "burn_1d": 0.61,
+      "burn_7d": 0.57
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-30",
+      "burn_1d": 1.3,
+      "burn_7d": 0.76
+    }
+  ],
+  "burn_rate_alerts": [
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-03",
+      "burn_1d": 3.62,
+      "burn_7d": 2.75,
+      "alert": "fast burn (1d >= 3x, 2 days)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-07",
+      "burn_1d": 2.86,
+      "burn_7d": 2.06,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-08",
+      "burn_1d": 1.04,
+      "burn_7d": 2.11,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-09",
+      "burn_1d": 3.1,
+      "burn_7d": 2.06,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-12",
+      "burn_1d": 3.33,
+      "burn_7d": 2.01,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-13",
+      "burn_1d": 0.0,
+      "burn_7d": 2.0,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "invoice-entry",
+      "day": "2026-09-30",
+      "burn_1d": 3.7,
+      "burn_7d": 2.22,
+      "alert": "fast burn (1d >= 3x, 2 days)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-13",
+      "burn_1d": 3.4,
+      "burn_7d": 1.32,
+      "alert": "fast burn (1d >= 3x, 2 days)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-14",
+      "burn_1d": 4.64,
+      "burn_7d": 1.85,
+      "alert": "fast burn (1d >= 3x, 2 days)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-15",
+      "burn_1d": 2.5,
+      "burn_7d": 2.06,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-16",
+      "burn_1d": 0.84,
+      "burn_7d": 2.19,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-17",
+      "burn_1d": 0.45,
+      "burn_7d": 2.24,
+      "alert": "slow burn (7d >= 2x)"
+    },
+    {
+      "agent": "web-research",
+      "day": "2026-09-18",
+      "burn_1d": 0.33,
+      "burn_7d": 2.09,
+      "alert": "slow burn (7d >= 2x)"
+    }
+  ]
+}
