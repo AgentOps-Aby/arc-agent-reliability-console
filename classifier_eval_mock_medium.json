@@ -1,0 +1,165 @@
+{
+  "llm": "mock",
+  "gate": "medium",
+  "n": 1035,
+  "accuracy": {
+    "dev": 1.0,
+    "test": 0.9822222222222222,
+    "test_holdout_wording": 0.9607843137254902,
+    "test_seen_wording": 1.0,
+    "test_rules_only": 0.9377777777777778,
+    "test_holdout_rules_only": 0.8627450980392157
+  },
+  "test_rules_share": 71.1,
+  "test_rules_accuracy": 100.0,
+  "test_llm_share": 28.9,
+  "test_llm_accuracy": 93.8,
+  "per_category_test": [
+    {
+      "category": "guardrail_block",
+      "support": 1,
+      "predicted": 1,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "context_overflow",
+      "support": 31,
+      "predicted": 31,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "loop_max_steps",
+      "support": 30,
+      "predicted": 30,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "rate_limit",
+      "support": 37,
+      "predicted": 36,
+      "precision": 100.0,
+      "recall": 97.3
+    },
+    {
+      "category": "invalid_tool_args",
+      "support": 29,
+      "predicted": 26,
+      "precision": 100.0,
+      "recall": 89.7
+    },
+    {
+      "category": "tool_error",
+      "support": 22,
+      "predicted": 22,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "timeout",
+      "support": 25,
+      "predicted": 25,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "output_parse_error",
+      "support": 14,
+      "predicted": 14,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "silent_wrong_output",
+      "support": 22,
+      "predicted": 22,
+      "precision": 100.0,
+      "recall": 100.0
+    },
+    {
+      "category": "unknown",
+      "support": 14,
+      "predicted": 18,
+      "precision": 77.8,
+      "recall": 100.0
+    }
+  ],
+  "confusion_test": [
+    {
+      "truth": "guardrail_block",
+      "pred": "guardrail_block",
+      "n": 1
+    },
+    {
+      "truth": "context_overflow",
+      "pred": "context_overflow",
+      "n": 31
+    },
+    {
+      "truth": "loop_max_steps",
+      "pred": "loop_max_steps",
+      "n": 30
+    },
+    {
+      "truth": "rate_limit",
+      "pred": "rate_limit",
+      "n": 36
+    },
+    {
+      "truth": "rate_limit",
+      "pred": "unknown",
+      "n": 1
+    },
+    {
+      "truth": "invalid_tool_args",
+      "pred": "invalid_tool_args",
+      "n": 26
+    },
+    {
+      "truth": "invalid_tool_args",
+      "pred": "unknown",
+      "n": 3
+    },
+    {
+      "truth": "tool_error",
+      "pred": "tool_error",
+      "n": 22
+    },
+    {
+      "truth": "timeout",
+      "pred": "timeout",
+      "n": 25
+    },
+    {
+      "truth": "output_parse_error",
+      "pred": "output_parse_error",
+      "n": 14
+    },
+    {
+      "truth": "silent_wrong_output",
+      "pred": "silent_wrong_output",
+      "n": 22
+    },
+    {
+      "truth": "unknown",
+      "pred": "unknown",
+      "n": 14
+    }
+  ],
+  "top_errors_test": [
+    {
+      "truth": "invalid_tool_args",
+      "pred": "unknown",
+      "n": 3
+    },
+    {
+      "truth": "rate_limit",
+      "pred": "unknown",
+      "n": 1
+    }
+  ],
+  "rule_latency_ms_per_run": 0.0852,
+  "llm_prompt_tokens_est": 461
+}

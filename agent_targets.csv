@@ -1,0 +1,5 @@
+agent_name,target_task_success_pct,max_cost_per_successful_task_usd,error_budget_window_days,effective_from
+support-triage,92.0,0.045,30,2026-09-01
+code-fix,83.0,1.0,30,2026-09-01
+web-research,93.0,0.45,30,2026-09-01
+invoice-entry,97.0,0.04,30,2026-09-01

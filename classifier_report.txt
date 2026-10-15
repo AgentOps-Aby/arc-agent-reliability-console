@@ -1,0 +1,43 @@
+
+=== ARC classifier v1.0.0  (layer 2 = mock, gate = none) ===
+failed runs classified: 1035  (dev 810, test 225)
+  dev (rules written against it)     n= 810  accuracy 100.0%
+  test (held out)                    n= 225  accuracy  97.8%
+  test, held-out wording only        n= 102  accuracy  95.1%
+  test, familiar wording only        n= 123  accuracy 100.0%
+  test, rules only (no layer 2)      n= 225  accuracy  93.8%
+  test held-out wording, rules only  n= 102  accuracy  86.3%
+  test handled by rules   88.0%  accuracy 99.5%
+  test handled by llm     12.0%  accuracy 85.2%
+  rules confidence high    n=160  accuracy 100.0%
+  rules confidence medium  n= 38  accuracy  97.4%
+
+  per category (test)        support  predicted  precision  recall
+  guardrail_block                  1          1      100.0   100.0
+  context_overflow                31         31      100.0   100.0
+  loop_max_steps                  30         30      100.0   100.0
+  rate_limit                      37         35      100.0    94.6
+  invalid_tool_args               29         26      100.0    89.7
+  tool_error                      22         23       95.7   100.0
+  timeout                         25         25      100.0   100.0
+  output_parse_error              14         14      100.0   100.0
+  silent_wrong_output             22         22      100.0   100.0
+  unknown                         14         18       77.8   100.0
+
+  confusion matrix (test): rows = truth, cols = predicted (abbrev.)
+                         guard  conte  loop_  rate_  inval  tool_  timeo  outpu  silen  unkno
+  guardrail_block            1      .      .      .      .      .      .      .      .      .
+  context_overflow           .     31      .      .      .      .      .      .      .      .
+  loop_max_steps             .      .     30      .      .      .      .      .      .      .
+  rate_limit                 .      .      .     35      .      1      .      .      .      1
+  invalid_tool_args          .      .      .      .     26      .      .      .      .      3
+  tool_error                 .      .      .      .      .     22      .      .      .      .
+  timeout                    .      .      .      .      .      .     25      .      .      .
+  output_parse_error         .      .      .      .      .      .      .     14      .      .
+  silent_wrong_output        .      .      .      .      .      .      .      .     22      .
+  unknown                    .      .      .      .      .      .      .      .      .     14
+
+  top test errors: [{'truth': 'invalid_tool_args', 'pred': 'unknown', 'n': 3}, {'truth': 'rate_limit', 'pred': 'unknown', 'n': 1}, {'truth': 'rate_limit', 'pred': 'tool_error', 'n': 1}]
+
+  rules latency 0.067 ms/run (measured) | LLM prompt ~461 tokens/run (est.)
+  wrote /mnt/attach/outputs/arc/data/classifier_eval_mock_none.json
