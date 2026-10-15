@@ -1,0 +1,754 @@
+<title>ARC Agent Reliability Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an operations console. Status strip on top, diagnosis grid in the middle, evidence table below.
+   Color is reserved for status (good / warning / critical) and for the one series a chart is about. */
+:root {
+  --bg: #f3f5f7; --panel: #ffffff; --ink: #101820; --ink-2: #47525e; --muted: #7a8591;
+  --line: #e2e7ec; --line-2: #c8d0d8; --accent: #2a78d6; --accent-soft: rgba(42,120,214,.12);
+  --series-2: #9aa6b2; --good: #0c8f0c; --good-fill: #0ca30c; --warn: #a86f00; --warn-fill: #fab219;
+  --crit: #c93434; --crit-fill: #d03b3b; --crit-soft: rgba(208,59,59,.10); --warn-soft: rgba(250,178,25,.16);
+  --good-soft: rgba(12,163,12,.10); --shade: rgba(208,59,59,.08); --shadow: 0 1px 2px rgba(16,24,32,.06);
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1116; --panel: #151a21; --ink: #e8edf2; --ink-2: #b2bcc6; --muted: #7d8994;
+  --line: #242b34; --line-2: #343e49; --accent: #3987e5; --accent-soft: rgba(57,135,229,.18);
+  --series-2: #6c7884; --good: #3cc23c; --good-fill: #0ca30c; --warn: #fab219; --warn-fill: #fab219;
+  --crit: #ef6b6b; --crit-fill: #d03b3b; --crit-soft: rgba(239,107,107,.14); --warn-soft: rgba(250,178,25,.14);
+  --good-soft: rgba(60,194,60,.12); --shade: rgba(239,107,107,.10); --shadow: none; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0d1116; --panel: #151a21; --ink: #e8edf2; --ink-2: #b2bcc6; --muted: #7d8994;
+  --line: #242b34; --line-2: #343e49; --accent: #3987e5; --accent-soft: rgba(57,135,229,.18);
+  --series-2: #6c7884; --good: #3cc23c; --good-fill: #0ca30c; --warn: #fab219; --warn-fill: #fab219;
+  --crit: #ef6b6b; --crit-fill: #d03b3b; --crit-soft: rgba(239,107,107,.14); --warn-soft: rgba(250,178,25,.14);
+  --good-soft: rgba(60,194,60,.12); --shade: rgba(239,107,107,.10); --shadow: none; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-ui); margin: 0; }
+.wrap { max-width: 1440px; margin: 0 auto; padding-inline: 20px; padding-block: 0 40px; }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num, .mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+/* header + filters */
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg);
+  border-bottom: 1px solid var(--line); margin-inline: -20px; padding: 12px 20px 10px; }
+.brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.brand h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+.brand .sub { color: var(--muted); font-size: 12.5px; }
+.brand .sub b { color: var(--ink-2); font-weight: 500; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; max-width: 100%; overflow-x: auto; border: 1px solid var(--line-2); border-radius: 7px; overflow: hidden; background: var(--panel); }
+.seg button { white-space: nowrap; border: 0; background: none; padding: 5px 10px; cursor: pointer; font-size: 12.5px; color: var(--ink-2); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 500; }
+.seg button:hover { background: var(--accent-soft); }
+.field { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.field select { max-width: 132px; }
+.field select, .field input { background: var(--panel); border: 1px solid var(--line-2); border-radius: 7px;
+  padding: 5px 8px; font-size: 12.5px; color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); border-radius: 999px;
+  padding: 2px 4px 2px 10px; font-size: 12px; }
+.chip button { border: 0; background: none; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; line-height: 1; color: var(--ink-2); }
+.chip button:hover { background: var(--line); }
+.chip.table { background: var(--line); }
+.linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 2px 4px; font-size: 12.5px; }
+
+@media (max-width: 700px) { header.top { position: static; } .field select { max-width: none; } }
+/* layout grid */
+.grid { display: grid; gap: 14px; margin-top: 14px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.span-12 { grid-column: span 12; } .span-8 { grid-column: span 8; } .span-4 { grid-column: span 4; }
+.span-5 { grid-column: span 5; } .span-3 { grid-column: span 3; }
+@media (max-width: 1100px) { .span-8, .span-4, .span-5, .span-3 { grid-column: span 12; } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; box-shadow: var(--shadow); }
+.ph { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.ph h2 { font-size: 13.5px; font-weight: 600; margin: 0; }
+.ph h2 .tag { display: inline-block; width: 18px; color: var(--muted); font-family: var(--font-data); font-weight: 500; }
+.ph .q { color: var(--muted); font-size: 12px; }
+.note { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+
+/* A banner */
+.banner { display: flex; flex-direction: column; gap: 6px; }
+.alert { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border: 1px solid var(--crit-fill);
+  background: var(--crit-soft); border-radius: 9px; padding: 8px 12px; font-size: 13px; }
+.alert.slow { border-color: var(--warn-fill); background: var(--warn-soft); }
+.alert .k { font-weight: 600; }
+.alert .when { color: var(--ink-2); }
+.alert .linkbtn { margin-left: auto; }
+.allclear { color: var(--muted); font-size: 12.5px; padding: 2px 2px; }
+
+/* B KPIs */
+.kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; min-width: 0; }
+.kpi .l { color: var(--muted); font-size: 12px; }
+.kpi .v { font-size: 24px; font-weight: 600; letter-spacing: -.01em; margin-top: 2px; }
+.kpi .s { color: var(--ink-2); font-size: 12px; margin-top: 2px; }
+.kpi.ns { border-color: var(--accent); }
+.kpi.ns .l { color: var(--accent); font-weight: 500; }
+.bad { color: var(--crit); } .warn { color: var(--warn); } .ok { color: var(--good); }
+
+/* C agent cards */
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 900px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .cards, .kpis { grid-template-columns: minmax(0, 1fr); } }
+.card { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px;
+  cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; position: relative; }
+.card:hover { border-color: var(--line-2); }
+.card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.card .nm { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.pill { font-size: 11px; font-weight: 500; padding: 1px 8px; border-radius: 999px; margin-left: auto; white-space: nowrap; }
+.pill.good { background: var(--good-soft); color: var(--good); } .pill.warning { background: var(--warn-soft); color: var(--warn); }
+.pill.critical { background: var(--crit-soft); color: var(--crit); }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.dot.good { background: var(--good-fill); } .dot.warning { background: var(--warn-fill); } .dot.critical { background: var(--crit-fill); }
+.row2 { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; position: relative; }
+.meter i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
+.meter.good i { background: var(--good-fill); } .meter.warning i { background: var(--warn-fill); } .meter.critical i { background: var(--crit-fill); }
+
+/* charts */
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--muted); font-size: 11px; font-family: var(--font-ui); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.legend i.box { height: 10px; width: 10px; border-radius: 2px; }
+
+/* E bars + heat */
+.bars { display: grid; grid-template-columns: minmax(90px, max-content) 1fr auto; gap: 5px 10px; align-items: center; font-size: 12.5px; }
+.bars .lab { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
+.bars .trk { height: 14px; position: relative; cursor: pointer; }
+.bars .trk i { position: absolute; inset: 0 auto 0 0; background: var(--series-2); border-radius: 0 4px 4px 0; }
+.bars .trk:hover i { background: var(--accent); }
+.bars .val { color: var(--ink); font-size: 12px; white-space: nowrap; }
+.bars .val small { color: var(--muted); margin-left: 6px; }
+.heat { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 12px; }
+.heat th { color: var(--muted); font-weight: 400; text-align: center; padding: 0 2px; }
+.heat th.rl { text-align: right; padding-right: 6px; color: var(--ink-2); white-space: nowrap; }
+.heat td { text-align: center; border-radius: 4px; padding: 4px 0; color: var(--ink); min-width: 38px; }
+.heatwrap { overflow-x: auto; }
+
+/* F retry table */
+.rtable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.rtable th { text-align: right; color: var(--muted); font-weight: 400; padding: 4px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.rtable th:first-child, .rtable td:first-child { text-align: left; }
+.rtable td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.rtable tr.click { cursor: pointer; } .rtable tr.click:hover td { background: var(--accent-soft); }
+.split { display: inline-flex; width: 70px; height: 8px; border-radius: 2px; overflow: hidden; vertical-align: middle; gap: 1px; }
+.split i { display: block; height: 100%; }
+.act { font-size: 11px; padding: 1px 8px; border-radius: 999px; font-weight: 500; }
+.act.keep { background: var(--good-soft); color: var(--good); } .act.watch { background: var(--warn-soft); color: var(--warn); }
+.act.stop { background: var(--crit-soft); color: var(--crit); }
+.tablewrap { overflow-x: auto; }
+
+/* G waste */
+.stack { display: flex; height: 22px; border-radius: 4px; overflow: hidden; gap: 2px; margin: 4px 0 8px; }
+.stack i { display: block; height: 100%; cursor: default; }
+.wl { display: grid; grid-template-columns: auto 1fr auto auto; gap: 4px 10px; font-size: 12.5px; align-items: center; }
+.wl .sw { width: 10px; height: 10px; border-radius: 2px; }
+.wl .lb { color: var(--ink-2); }
+
+/* H latency */
+.lat { display: grid; grid-template-columns: minmax(80px, max-content) 1fr auto; gap: 6px 10px; align-items: center; font-size: 12.5px; }
+.lat .lab { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lat .trk { height: 12px; position: relative; background: var(--line); border-radius: 3px; }
+.lat .trk i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; }
+.lat .trk b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink-2); }
+.sub-h { font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+
+/* I runs table */
+.runs { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 860px; }
+.runs th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 8px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.runs th button { border: 0; background: none; color: inherit; cursor: pointer; padding: 0; }
+.runs th button[aria-pressed="true"] { color: var(--ink); font-weight: 500; }
+.runs td { padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.runs tr { cursor: pointer; } .runs tbody tr:hover td { background: var(--accent-soft); }
+.runs td.err { white-space: normal; color: var(--ink-2); max-width: 340px; overflow-wrap: anywhere; }
+.badge { font-size: 11px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 4px; padding: 0 5px; margin-left: 6px; }
+.more { margin-top: 10px; display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 12px; }
+.btn { border: 1px solid var(--line-2); background: var(--panel); border-radius: 7px; padding: 5px 12px; cursor: pointer; font-size: 12.5px; }
+.btn:hover { background: var(--accent-soft); }
+
+/* J drawer */
+.scrim { position: fixed; inset: 0; background: rgba(8,12,16,.35); z-index: 40; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--panel); z-index: 41;
+  border-left: 1px solid var(--line-2); overflow-y: auto; padding: calc(16px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.drawer h3 { margin: 0; font-size: 15px; }
+.dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 12.5px; margin: 12px 0; }
+.dl dt { color: var(--muted); } .dl dd { margin: 0; overflow-wrap: anywhere; }
+.chain { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
+.chain .n { border: 1px solid var(--line-2); border-radius: 6px; padding: 3px 8px; }
+.chain .n.cur { border-color: var(--accent); background: var(--accent-soft); }
+.steps { display: grid; grid-template-columns: 22px minmax(90px, max-content) 1fr auto; gap: 4px 10px; align-items: center; font-size: 12px; }
+.steps .tl { height: 10px; position: relative; }
+.steps .tl i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+.errbox { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 0; }
+.dh { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.sec { font-size: 12px; color: var(--muted); margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .06em; }
+
+/* tooltip */
+#tip { position: fixed; z-index: 60; pointer-events: none; background: var(--panel); border: 1px solid var(--line-2);
+  border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.14); max-width: 280px; }
+#tip .t { color: var(--muted); margin-bottom: 4px; }
+#tip .r { display: flex; align-items: center; gap: 8px; }
+#tip .r i { width: 12px; height: 2px; display: inline-block; }
+#tip .r b { font-family: var(--font-data); font-weight: 500; }
+footer { color: var(--muted); font-size: 12px; margin-top: 18px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+@media (prefers-reduced-motion: no-preference) { .meter i, .bars .trk i { transition: width .25s ease; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>ARC · Agent Reliability Console</h1>
+      <span class="sub"><b>4 agents</b> · September 2026 · synthetic data · all times UTC</span>
+    </div>
+    <div class="filters" role="group" aria-label="Filters">
+      <div class="seg" id="f-agent" role="group" aria-label="Agent"></div>
+      <label class="field" for="f-tt">Task type <select id="f-tt"></select></label>
+      <label class="field" for="f-deploy">Deploy <select id="f-deploy"></select></label>
+      <div class="seg" id="f-range" role="group" aria-label="Date range"></div>
+      <label class="field" for="f-from"><input aria-label="From date" type="date" id="f-from" min="2026-09-01" max="2026-09-30"></label>
+      <label class="field" for="f-to">– <input aria-label="To date" type="date" id="f-to" min="2026-09-01" max="2026-09-30"></label>
+    </div>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <section class="grid">
+    <div class="span-12 banner" id="pA" aria-live="polite"></div>
+    <div class="span-12 kpis" id="pB"></div>
+    <div class="span-12 cards" id="pC"></div>
+
+    <div class="panel span-8">
+      <div class="ph"><h2><span class="tag">D</span>Task success by day</h2><span class="q">Since when, and did a deploy cause it? Click a day to filter.</span></div>
+      <div class="chart" id="pD"></div>
+      <div class="legend" id="pD-legend"></div>
+    </div>
+    <div class="panel span-4">
+      <div class="ph"><h2><span class="tag">E</span>Failures</h2>
+        <div class="seg" id="e-mode" role="group" aria-label="Group failures by"></div></div>
+      <div id="pE"></div>
+    </div>
+
+    <div class="panel span-5">
+      <div class="ph"><h2><span class="tag">F</span>Retry effectiveness</h2><span class="q" id="pF-range"></span></div>
+      <div class="tablewrap" id="pF"></div>
+      <p class="note">By the first attempt's failure category. Keep ≥ 70% recovered, watch 30–70%, stop &lt; 30%. Click a row to list those runs.</p>
+    </div>
+    <div class="panel span-4">
+      <div class="ph"><h2><span class="tag">G</span>Cost of waste</h2><span class="q">Where does spend buy nothing?</span></div>
+      <div id="pG"></div>
+    </div>
+    <div class="panel span-3">
+      <div class="ph"><h2><span class="tag">H</span>Latency</h2><span class="q">p50 / p95</span></div>
+      <div id="pH"></div>
+    </div>
+
+    <div class="panel span-12">
+      <div class="ph"><h2><span class="tag">I</span>Failing runs</h2><span class="q" id="pI-count"></span></div>
+      <div class="tablewrap" id="pI"></div>
+      <div class="more" id="pI-more"></div>
+    </div>
+  </section>
+  <footer>
+    <span>Failure categories from the ARC classifier (rules + model fallback, taxonomy 1.0.0).</span>
+    <span>Success = completed and output check passed or not run. Cancelled and in-progress tasks excluded.</span>
+    <span>Data: 5,122 synthetic runs, seed 42.</span>
+  </footer>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Run detail" role="dialog" aria-modal="true"></aside>
+<div id="tip" hidden></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+</script>
+<script>
+(() => {
+const D = DATA;
+const A = D.agents, CATS = D.cats, TT = D.task_types, DEP = D.deploys, TOOLS = D.tools;
+const DAY = 1440, NDAYS = D.days;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) { if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) e.setAttribute(k, v); }
+  for (const c of kids) if (c !== null && c !== undefined) e.append(c.nodeType ? c : document.createTextNode(c)); return e; };
+const SVG = 'http://www.w3.org/2000/svg';
+const sv = (tag, attrs = {}) => { const e = document.createElementNS(SVG, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); return e; };
+
+// ---------- model ----------
+const runs = D.runs.map(a => ({ i: a[0], task: a[1], retry: a[2], trigger: a[3], agent: a[4], tt: a[5], deploy: a[6],
+  t: a[7], dur: a[8], status: a[9], outcome: a[10], cat: a[11], cost: a[12], steps: a[13], tok: a[14], parent: a[15] }));
+runs.forEach(r => { r.day = Math.floor(r.t / DAY) + 1; r.success = r.status === 0 && r.outcome !== 1;
+  r.verified = r.status === 0 && r.outcome === 0; r.failed = !r.success && r.status !== 3 && r.status !== 4; });
+const tasks = new Map();
+runs.forEach(r => { let t = tasks.get(r.task); if (!t) { t = { id: r.task, runs: [] }; tasks.set(r.task, t); } t.runs.push(r); });
+const taskList = [...tasks.values()];
+taskList.forEach(t => {
+  t.runs.sort((a, b) => a.retry - b.retry);
+  const f = t.runs[0], last = t.runs[t.runs.length - 1];
+  Object.assign(t, { first: f, agent: f.agent, tt: f.tt, deploy: f.deploy, day: f.day,
+    firstSuccess: f.success, eventual: t.runs.some(r => r.success), verifiedEventual: t.runs.some(r => r.verified),
+    retries: last.retry, cost: t.runs.reduce((s, r) => s + r.cost, 0),
+    running: t.runs.some(r => r.status === 4) });
+  t.cancelled = !t.eventual && last.status === 3;
+  t.finished = !t.running && !t.cancelled;
+  t.retryCost = t.runs.filter(r => r.retry > 0).reduce((s, r) => s + r.cost, 0);
+  t.runs.forEach(r => { r.taskObj = t; });
+});
+
+// ---------- helpers ----------
+const pct = (x, d = 1) => (x === null || isNaN(x)) ? '–' : (100 * x).toFixed(d) + '%';
+const usd = x => x === null || isNaN(x) ? '–' : x >= 100 ? '$' + Math.round(x).toLocaleString('en-US') : x >= 10 ? '$' + x.toFixed(1) : x >= 1 ? '$' + x.toFixed(2) : '$' + x.toFixed(3);
+const dayLabel = d => `Sep ${d}`;
+const iso = d => `2026-09-${String(d).padStart(2, '0')}`;
+const fromIso = s => Math.max(1, Math.min(NDAYS, parseInt(s.slice(8), 10) || 1));
+const stamp = m => { const d = Math.floor(m / DAY) + 1, h = Math.floor((m % DAY) / 60), mi = m % 60; return `Sep ${d} ${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`; };
+const short = d => DEP[d].split('@')[1];
+const pctl = (arr, p) => { if (!arr.length) return null; const v = [...arr].sort((a, b) => a - b); return v[Math.max(0, Math.min(v.length - 1, Math.ceil(p / 100 * v.length) - 1))]; };
+const sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
+const CAT_LABEL = { tool_error: 'tool error', timeout: 'timeout', rate_limit: 'rate limit', invalid_tool_args: 'invalid args',
+  loop_max_steps: 'loop / max steps', context_overflow: 'context overflow', guardrail_block: 'guardrail block',
+  output_parse_error: 'output parse', silent_wrong_output: 'silent wrong output', unknown: 'unknown' };
+const catName = c => CAT_LABEL[CATS[c]] || CATS[c];
+
+// ---------- state ----------
+const S = { agents: new Set(), tt: -1, deploy: -1, from: 1, to: NDAYS, cat: -1, retried: false, eMode: 'category', sort: 'time', shown: 20 };
+const agentOk = a => S.agents.size === 0 || S.agents.has(a);
+const single = () => S.agents.size === 1 ? [...S.agents][0] : -1;
+
+function taskPasses(t, ignoreAgent = false) {
+  return (ignoreAgent || agentOk(t.agent)) && (S.tt < 0 || t.tt === S.tt) && (S.deploy < 0 || t.deploy === S.deploy)
+    && t.day >= S.from && t.day <= S.to;
+}
+function runPasses(r) {
+  return agentOk(r.agent) && (S.tt < 0 || r.tt === S.tt) && (S.deploy < 0 || r.deploy === S.deploy) && r.day >= S.from && r.day <= S.to;
+}
+function stats(ts) {
+  const f = ts.filter(t => t.finished), n = f.length;
+  const succ = sum(f, t => t.eventual), cost = sum(f, t => t.cost);
+  return { n, tsr: n ? succ / n : null, fasr: n ? sum(f, t => t.firstSuccess) / n : null,
+    vtsr: n ? sum(f, t => t.verifiedEventual) / n : null, succ, cost, cps: succ ? cost / succ : null,
+    retrySpend: sum(f, t => t.retryCost), wasted: sum(f.filter(t => !t.eventual), t => t.retryCost),
+    unverified: succ ? (succ - sum(f, t => t.verifiedEventual)) / succ : null };
+}
+const budget = (tsr, a) => tsr === null ? null : (1 - tsr) / ((100 - D.targets[a][0]) / 100);
+
+// burn-rate alerts per agent (agent-level SLO: ignores task-type and deploy filters)
+const burn = A.map((_, a) => {
+  const allowed = (100 - D.targets[a][0]) / 100, days = [];
+  for (let d = 1; d <= NDAYS; d++) {
+    const ts = taskList.filter(t => t.agent === a && t.day === d && t.finished);
+    days.push({ d, n: ts.length, fail: ts.filter(t => !t.eventual).length });
+  }
+  const out = [];
+  days.forEach((x, i) => {
+    const b1 = x.n ? (x.fail / x.n) / allowed : 0;
+    const prev = i ? (days[i - 1].n ? (days[i - 1].fail / days[i - 1].n) / allowed : 0) : 0;
+    const win = days.slice(Math.max(0, i - 6), i + 1), wn = sum(win, y => y.n);
+    const b7 = wn ? (sum(win, y => y.fail) / wn) / allowed : 0;
+    let kind = null;
+    if (b1 >= 3 && prev >= 3) kind = 'fast'; else if (win.length === 7 && b7 >= 2) kind = 'slow';
+    out.push({ d: x.d, b1, b7, kind });
+  });
+  return out;
+});
+function episodes(a) {
+  const eps = []; let cur = null;
+  burn[a].forEach(x => {
+    if (x.kind && x.d >= S.from && x.d <= S.to) {
+      if (cur && cur.kind === x.kind && cur.end === x.d - 1) { cur.end = x.d; cur.peak = Math.max(cur.peak, x.kind === 'fast' ? x.b1 : x.b7); }
+      else { cur = { a, kind: x.kind, start: x.d, end: x.d, peak: x.kind === 'fast' ? x.b1 : x.b7 }; eps.push(cur); }
+    } else cur = null;
+  });
+  return eps;
+}
+function status(a, st) {
+  if (!st.n) return 'none';
+  const b = budget(st.tsr, a), overCap = st.cps !== null && st.cps > D.targets[a][1];
+  if (b > 1) return 'critical';
+  if (b >= 0.8 || overCap) return 'warning';
+  return 'good';
+}
+const STATUS_LABEL = { good: 'Within target', warning: 'At risk', critical: 'Over budget', none: 'No tasks' };
+
+// ---------- tooltip ----------
+const tip = $('tip');
+function showTip(ev, title, rows) {
+  tip.replaceChildren(el('div', { class: 't', text: title }),
+    ...rows.map(([color, val, lab]) => el('div', { class: 'r' }, color ? el('i', { style: `background:${color}` }) : null, el('b', { text: val }), el('span', { text: lab || '' }))));
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.hidden = true; };
+const hover = (node, fn) => { node.addEventListener('pointermove', fn); node.addEventListener('pointerleave', hideTip); };
+
+// ---------- filters ----------
+function buildFilters() {
+  const fa = $('f-agent'); fa.replaceChildren();
+  fa.append(el('button', { 'aria-pressed': String(S.agents.size === 0), text: 'All agents', onclick: () => { S.agents.clear(); S.tt = -1; S.deploy = -1; update(); } }));
+  A.forEach((name, a) => fa.append(el('button', { 'aria-pressed': String(S.agents.has(a)), text: name,
+    onclick: () => { S.agents.has(a) ? S.agents.delete(a) : S.agents.add(a); validateDeps(); update(); } })));
+  const tt = $('f-tt'); tt.replaceChildren(el('option', { value: -1, text: 'All' }));
+  const tts = [...new Set(taskList.filter(t => agentOk(t.agent)).map(t => t.tt))].sort((x, y) => TT[x].localeCompare(TT[y]));
+  tts.forEach(i => tt.append(el('option', { value: i, text: TT[i] }))); tt.value = S.tt;
+  const dp = $('f-deploy'); dp.replaceChildren(el('option', { value: -1, text: 'All' }));
+  const dps = [...new Set(taskList.filter(t => agentOk(t.agent)).map(t => t.deploy))].sort((x, y) => DEP[x].localeCompare(DEP[y], 'en', { numeric: true }));
+  dps.forEach(i => dp.append(el('option', { value: i, text: DEP[i] }))); dp.value = S.deploy;
+  const fr = $('f-range'); fr.replaceChildren();
+  [['Last 7 days', 24], ['Last 14 days', 17], ['30 days', 1]].forEach(([lab, f]) =>
+    fr.append(el('button', { 'aria-pressed': String(S.from === f && S.to === NDAYS), text: lab, onclick: () => { S.from = f; S.to = NDAYS; update(); } })));
+  $('f-from').value = iso(S.from); $('f-to').value = iso(S.to);
+  // chips
+  const chips = $('chips'); chips.replaceChildren();
+  const chip = (txt, clear, cls = '') => chips.append(el('span', { class: 'chip ' + cls }, txt, el('button', { 'aria-label': 'Remove filter ' + txt, text: '×', onclick: () => { clear(); update(); } })));
+  [...S.agents].forEach(a => chip('Agent: ' + A[a], () => { S.agents.delete(a); validateDeps(); }));
+  if (S.tt >= 0) chip('Task type: ' + TT[S.tt], () => { S.tt = -1; });
+  if (S.deploy >= 0) chip('Deploy: ' + DEP[S.deploy], () => { S.deploy = -1; });
+  if (S.from !== 1 || S.to !== NDAYS) chip(`Dates: ${dayLabel(S.from)}${S.to !== S.from ? '–' + dayLabel(S.to) : ''}`, () => { S.from = 1; S.to = NDAYS; });
+  if (S.cat >= 0) chip('Table: ' + catName(S.cat), () => { S.cat = -1; }, 'table');
+  if (S.retried) chip('Table: retried tasks only', () => { S.retried = false; }, 'table');
+  if (chips.children.length > 1) chips.append(el('button', { class: 'linkbtn', text: 'Clear all', onclick: () => { Object.assign(S, { tt: -1, deploy: -1, from: 1, to: NDAYS, cat: -1, retried: false }); S.agents.clear(); update(); } }));
+}
+function validateDeps() {
+  if (S.tt >= 0 && !taskList.some(t => agentOk(t.agent) && t.tt === S.tt)) S.tt = -1;
+  if (S.deploy >= 0 && !taskList.some(t => agentOk(t.agent) && t.deploy === S.deploy)) S.deploy = -1;
+}
+$('f-tt').addEventListener('change', e => { S.tt = +e.target.value; update(); });
+$('f-deploy').addEventListener('change', e => { S.deploy = +e.target.value; update(); });
+$('f-from').addEventListener('change', e => { S.from = fromIso(e.target.value); if (S.to < S.from) S.to = S.from; update(); });
+$('f-to').addEventListener('change', e => { S.to = fromIso(e.target.value); if (S.from > S.to) S.from = S.to; update(); });
+
+// ---------- A: burn-rate alerts ----------
+function renderA() {
+  const box = $('pA'); box.replaceChildren();
+  const eps = A.map((_, a) => a).filter(agentOk).flatMap(episodes)
+    .sort((x, y) => (y.kind === 'fast') - (x.kind === 'fast') || y.end - x.end).slice(0, 3);
+  if (!eps.length) { box.append(el('div', { class: 'allclear', text: `A · No burn-rate alerts for this selection between ${dayLabel(S.from)} and ${dayLabel(S.to)}.` })); return; }
+  eps.forEach(e => box.append(el('div', { class: 'alert' + (e.kind === 'slow' ? ' slow' : '') },
+    el('span', { class: 'k', text: `A · ${A[e.a]}: ${e.kind === 'fast' ? 'fast burn' : 'slow burn'}` }),
+    el('span', { class: 'when', text: `${dayLabel(e.start)}${e.end !== e.start ? '–' + dayLabel(e.end) : ''} · peak ${e.peak.toFixed(1)}× the sustainable rate${e.kind === 'fast' ? ' (1-day, 2 days running)' : ' (7-day)'}` }),
+    el('button', { class: 'linkbtn', text: 'View this window →', onclick: () => { S.agents = new Set([e.a]); S.from = Math.max(1, e.start - 3); S.to = Math.min(NDAYS, e.end + 2); validateDeps(); update(); } }))));
+}
+
+// ---------- B: KPIs ----------
+function renderB(st) {
+  const box = $('pB'); box.replaceChildren();
+  const a = single();
+  const worst = A.map((_, i) => i).filter(agentOk).map(i => ({ i, b: budget(stats(taskList.filter(t => t.agent === i && taskPasses(t))).tsr, i) }))
+    .filter(x => x.b !== null).sort((x, y) => y.b - x.b)[0];
+  const kpi = (l, v, s, cls = '', vcls = '') => box.append(el('div', { class: 'kpi ' + cls }, el('div', { class: 'l', text: l }), el('div', { class: 'v num ' + vcls, text: v }), el('div', { class: 's', text: s })));
+  const tgt = a >= 0 ? D.targets[a][0] / 100 : null;
+  kpi('North star · task success', pct(st.tsr), a >= 0 ? `target ${D.targets[a][0]}% · ${st.n.toLocaleString('en-US')} tasks` : `${st.n.toLocaleString('en-US')} finished tasks`, 'ns', tgt !== null && st.tsr < tgt ? 'bad' : '');
+  kpi('First-attempt success', pct(st.fasr), st.tsr !== null ? `retries add ${((st.tsr - st.fasr) * 100).toFixed(1)} pts` : '', '', st.tsr - st.fasr > 0.10 ? 'warn' : '');
+  const cap = a >= 0 ? D.targets[a][1] : null;
+  kpi('Cost per successful task', usd(st.cps), cap !== null ? `cap ${usd(cap)}` : `${usd(st.cost)} total spend`, '', cap !== null && st.cps > cap ? 'bad' : '');
+  const ws = st.retrySpend ? st.wasted / st.retrySpend : null;
+  kpi('Wasted retry cost', usd(st.wasted), ws !== null ? `${pct(ws, 0)} of ${usd(st.retrySpend)} retry spend` : 'no retries', '', ws > 0.5 ? 'bad' : ws > 0.25 ? 'warn' : '');
+  kpi('Worst error budget', worst ? pct(worst.b, 0) : '–', worst ? A[worst.i] : '', '', worst && worst.b > 1 ? 'bad' : worst && worst.b >= 0.8 ? 'warn' : '');
+}
+
+// ---------- C: agent cards ----------
+function renderC() {
+  const box = $('pC'); box.replaceChildren();
+  A.forEach((name, a) => {
+    const st = stats(taskList.filter(t => t.agent === a && taskPasses(t, true)));
+    const s = status(a, st), b = budget(st.tsr, a), [tg, cap] = D.targets[a];
+    const runsA = runs.filter(r => r.agent === a && r.status === 0 && (S.tt < 0 || r.tt === S.tt) && (S.deploy < 0 || r.deploy === S.deploy) && r.day >= S.from && r.day <= S.to);
+    const cov = runsA.length ? runsA.filter(r => r.outcome !== 2).length / runsA.length : null;
+    const eps = episodes(a), burning = eps.length ? (eps.some(e => e.kind === 'fast') ? 'fast burn' : 'slow burn') : null;
+    const card = el('button', { class: 'card', 'aria-pressed': String(S.agents.has(a) && S.agents.size === 1), onclick: () => { S.agents = (S.agents.size === 1 && S.agents.has(a)) ? new Set() : new Set([a]); validateDeps(); update(); } },
+      el('div', { class: 'nm' }, el('span', { class: 'dot ' + s }), name, el('span', { class: 'pill ' + s, text: STATUS_LABEL[s] })),
+      el('div', { class: 'row2' }, el('span', {}, 'Success ', el('b', { class: 'num ' + (st.tsr !== null && st.tsr * 100 < tg ? 'bad' : ''), text: pct(st.tsr) }), ` vs ${tg}%`),
+        el('span', {}, 'Budget ', el('b', { class: 'num', text: b === null ? '–' : pct(b, 0) }))),
+      el('div', { class: 'meter ' + s }, el('i', { style: `width:${Math.min(100, (b || 0) * 100)}%` })),
+      el('div', { class: 'row2' }, el('span', {}, el('b', { class: 'num ' + (st.cps > cap ? 'bad' : ''), text: usd(st.cps) }), ` / success · cap ${usd(cap)}${st.cps > cap ? ' ▲' : ''}`),
+        el('span', { text: cov === null ? '' : `checks ${pct(cov, 0)}` })),
+      burning ? el('div', { class: 'row2' }, el('span', { class: 'bad', text: '● ' + burning + ' in range' })) : null);
+    box.append(card);
+  });
+}
+
+// ---------- D: trend ----------
+function renderD() {
+  const box = $('pD'); box.replaceChildren();
+  const W = Math.max(320, box.clientWidth || 700), H = W < 520 ? 230 : 260, m = { l: 40, r: 14, t: 22, b: 26 };
+  const days = []; for (let d = S.from; d <= S.to; d++) days.push(d);
+  const rows = days.map(d => { const st = stats(taskList.filter(t => taskPasses(t) && t.day === d)); return { d, ...st }; });
+  const vals = rows.flatMap(r => [r.tsr, r.fasr]).filter(v => v !== null);
+  const a = single(), tgt = a >= 0 ? D.targets[a][0] / 100 : null;
+  let lo = Math.min(0.6, ...vals, tgt ?? 1); lo = Math.floor(lo * 10) / 10;
+  const x = d => m.l + (days.length === 1 ? (W - m.l - m.r) / 2 : (d - S.from) / (S.to - S.from) * (W - m.l - m.r));
+  const y = v => m.t + (1 - (v - lo) / (1 - lo)) * (H - m.t - m.b);
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Daily task success and first-attempt success' });
+  // burn shading
+  const burnDays = new Set(); A.forEach((_, i) => { if (agentOk(i)) burn[i].forEach(b => { if (b.kind) burnDays.add(b.d); }); });
+  const step = days.length > 1 ? (W - m.l - m.r) / (days.length - 1) : 40;
+  days.forEach(d => { if (burnDays.has(d)) svg.append(sv('rect', { x: x(d) - step / 2, y: m.t, width: step, height: H - m.t - m.b, fill: 'var(--shade)' })); });
+  // grid
+  for (let v = lo; v <= 1.0001; v += 0.1) {
+    svg.append(sv('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: 'var(--line)' }));
+    const t = sv('text', { x: m.l - 6, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = Math.round(v * 100) + '%'; svg.append(t);
+  }
+  const ticks = days.length <= 8 ? days : days.filter(d => (d - S.from) % Math.ceil(days.length / 6) === 0);
+  ticks.forEach(d => { const t = sv('text', { x: x(d), y: H - 6, 'text-anchor': 'middle' }); t.textContent = dayLabel(d); svg.append(t); });
+  if (tgt !== null) { svg.append(sv('line', { x1: m.l, x2: W - m.r, y1: y(tgt), y2: y(tgt), stroke: 'var(--ink-2)', 'stroke-dasharray': '4 3' }));
+    const t = sv('text', { x: m.l + 4, y: y(tgt) + 13, 'text-anchor': 'start', 'font-weight': 500 }); t.textContent = `target ${D.targets[a][0]}%`; svg.append(t); }
+  // deploy markers
+  const firstDep = {}; D.deploy_changes.forEach(([ag, dep, min]) => { if (!(ag in firstDep) || min < firstDep[ag]) firstDep[ag] = min; });
+  D.deploy_changes.forEach(([ag, dep, min]) => {
+    if (!agentOk(ag) || min === firstDep[ag]) return; const dd = min / DAY + 1; if (dd < S.from || dd > S.to + 1) return;
+    const xx = m.l + (days.length === 1 ? (W - m.l - m.r) / 2 : (dd - S.from) / Math.max(1, S.to - S.from) * (W - m.l - m.r));
+    svg.append(sv('line', { x1: xx, x2: xx, y1: m.t - 4, y2: H - m.b, stroke: 'var(--ink-2)', 'stroke-dasharray': '2 3' }));
+    const t = sv('text', { x: xx + 3, y: m.t - 8, 'font-size': 10.5 }); t.textContent = (S.agents.size === 1 ? '' : A[ag].split('-')[0] + ' ') + short(dep); svg.append(t);
+  });
+  // lines
+  const path = key => rows.filter(r => r[key] !== null).map((r, i) => `${i ? 'L' : 'M'}${x(r.d).toFixed(1)} ${y(r[key]).toFixed(1)}`).join(' ');
+  svg.append(sv('path', { d: path('fasr'), fill: 'none', stroke: 'var(--series-2)', 'stroke-width': 1.75 }));
+  svg.append(sv('path', { d: path('tsr'), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.25 }));
+  // crosshair + hit layer
+  const cross = sv('line', { y1: m.t, y2: H - m.b, stroke: 'var(--ink-2)', 'stroke-width': 1, visibility: 'hidden' });
+  const dotA = sv('circle', { r: 4, fill: 'var(--accent)', stroke: 'var(--panel)', 'stroke-width': 2, visibility: 'hidden' });
+  const dotB = sv('circle', { r: 3.5, fill: 'var(--series-2)', stroke: 'var(--panel)', 'stroke-width': 2, visibility: 'hidden' });
+  svg.append(cross, dotB, dotA);
+  const hit = sv('rect', { x: m.l, y: 0, width: W - m.l - m.r, height: H - m.b, fill: 'transparent', style: 'cursor:pointer' });
+  const nearest = ev => { const pt = svg.getBoundingClientRect(); const px = (ev.clientX - pt.left) * W / pt.width;
+    let best = rows[0]; rows.forEach(r => { if (Math.abs(x(r.d) - px) < Math.abs(x(best.d) - px)) best = r; }); return best; };
+  hit.addEventListener('pointermove', ev => { const r = nearest(ev); if (!r || r.tsr === null) { hideTip(); return; }
+    cross.setAttribute('x1', x(r.d)); cross.setAttribute('x2', x(r.d)); cross.setAttribute('visibility', 'visible');
+    dotA.setAttribute('cx', x(r.d)); dotA.setAttribute('cy', y(r.tsr)); dotA.setAttribute('visibility', 'visible');
+    dotB.setAttribute('cx', x(r.d)); dotB.setAttribute('cy', y(r.fasr)); dotB.setAttribute('visibility', 'visible');
+    const deps = D.deploy_changes.filter(([ag, , mn]) => agentOk(ag) && mn !== firstDep[ag] && Math.floor(mn / DAY) + 1 === r.d).map(([ag, dp]) => DEP[dp]);
+    showTip(ev, `${dayLabel(r.d)} · ${r.n} tasks${burnDays.has(r.d) ? ' · burn alert' : ''}`, [['var(--accent)', pct(r.tsr), 'task success'], ['var(--series-2)', pct(r.fasr), 'first attempt'], ...deps.map(dp => [null, 'deploy', dp])]); });
+  hit.addEventListener('pointerleave', () => { hideTip(); [cross, dotA, dotB].forEach(n => n.setAttribute('visibility', 'hidden')); });
+  hit.addEventListener('click', ev => { const r = nearest(ev); if (r) { S.from = r.d; S.to = r.d; update(); } });
+  svg.append(hit); box.append(svg);
+  $('pD-legend').replaceChildren(el('span', {}, el('i', { style: 'background:var(--accent);height:3px' }), 'Task success'),
+    el('span', {}, el('i', { style: 'background:var(--series-2)' }), 'First attempt'),
+    el('span', {}, el('i', { style: 'background:none;border-top:2px dotted var(--ink-2)' }), 'Deploy'),
+    el('span', {}, el('i', { class: 'box', style: 'background:var(--shade);border:1px solid var(--crit-fill)' }), 'Burn-rate alert day'),
+    tgt !== null ? el('span', {}, el('i', { style: 'background:none;border-top:2px dashed var(--ink-2)' }), 'Target') : el('span', { style: 'color:var(--muted)', text: 'Pick one agent to see its target line' }));
+}
+
+// ---------- E: failures ----------
+function failedRunsSel() { return runs.filter(r => r.failed && r.cat >= 0 && runPasses(r)); }
+function failTool(r) { const dt = D.detail[r.i]; if (!dt) return 'unknown'; const st = dt.steps.filter(s => s[3] !== 0).pop();
+  if (!st) return 'output check'; return st[1] >= 0 ? TOOLS[st[1]] : D.step_types[st[0]].replace('_', ' '); }
+function renderE() {
+  const seg = $('e-mode'); seg.replaceChildren();
+  [['category', 'Category'], ['task', 'Task type'], ['tool', 'Tool'], ['week', 'By week']].forEach(([k, lab]) =>
+    seg.append(el('button', { 'aria-pressed': String(S.eMode === k), text: lab, onclick: () => { S.eMode = k; renderE(); } })));
+  const box = $('pE'); box.replaceChildren();
+  const fr = failedRunsSel();
+  if (!fr.length) { box.append(el('p', { class: 'note', text: 'No failed runs in this selection.' })); return; }
+  if (S.eMode === 'week') {
+    const periods = []; for (let p = Math.floor((S.from - 1) / 6); p <= Math.floor((S.to - 1) / 6); p++) periods.push(p);
+    const cats = [...new Set(fr.map(r => r.cat))]; const tot = c => fr.filter(r => r.cat === c).length; cats.sort((a, b) => tot(b) - tot(a));
+    const per = periods.map(p => fr.filter(r => Math.floor((r.day - 1) / 6) === p).length);
+    const tbl = el('table', { class: 'heat' }); const hr = el('tr', {}, el('th', {}));
+    periods.forEach(p => hr.append(el('th', { text: `${6 * p + 1}–${Math.min(30, 6 * p + 6)}` }))); tbl.append(el('thead', {}, hr));
+    const tb = el('tbody'); tbl.append(tb);
+    cats.forEach(c => { const tr = el('tr', {}, el('th', { class: 'rl', text: catName(c) }));
+      periods.forEach((p, j) => { const n = fr.filter(r => r.cat === c && Math.floor((r.day - 1) / 6) === p).length; const sh = per[j] ? n / per[j] : 0;
+        const td = el('td', { class: 'num', text: n ? pct(sh, 0) : '·', style: `background:rgba(57,135,229,${(0.06 + sh * 1.6).toFixed(2)})` });
+        hover(td, ev => showTip(ev, `${catName(c)} · Sep ${6 * p + 1}–${Math.min(30, 6 * p + 6)}`, [[null, String(n), `failed runs, ${pct(sh, 1)} of the period's failures`]]));
+        tr.append(td); }); tb.append(tr); });
+    box.append(el('div', { class: 'heatwrap' }, tbl), el('p', { class: 'note', text: 'Share of each 6-day period\'s failed runs. A category whose share climbs left to right is growing.' }));
+    return;
+  }
+  const key = S.eMode === 'category' ? r => catName(r.cat) : S.eMode === 'task' ? r => TT[r.tt] : failTool;
+  const groups = new Map(); fr.forEach(r => { const k = key(r); groups.set(k, (groups.get(k) || 0) + 1); });
+  const arr = [...groups.entries()].sort((a, b) => b[1] - a[1]); const max = arr[0][1];
+  const shown = arr.slice(0, 10), rest = arr.slice(10);
+  const g = el('div', { class: 'bars' });
+  shown.forEach(([k, n]) => {
+    const trk = el('div', { class: 'trk', role: 'button', tabindex: 0, 'aria-label': `${k}: ${n} failed runs` }, el('i', { style: `width:${(n / max * 100).toFixed(1)}%` }));
+    const pick = () => { if (S.eMode === 'category') { S.cat = CATS.findIndex((c, i) => catName(i) === k); }
+      else if (S.eMode === 'task') { S.tt = TT.indexOf(k); } update(); scrollToTable(); };
+    trk.addEventListener('click', pick); trk.addEventListener('keydown', e => { if (e.key === 'Enter') pick(); });
+    hover(trk, ev => showTip(ev, k, [[null, String(n), 'failed runs'], [null, pct(n / fr.length), 'of failures in selection']]));
+    g.append(el('div', { class: 'lab', text: k, title: k }), trk, el('div', { class: 'val num' }, String(n), el('small', { text: pct(n / fr.length, 0) })));
+  });
+  if (rest.length) g.append(el('div', { class: 'lab', text: `+${rest.length} more` }), el('div'), el('div', { class: 'val num', text: String(sum(rest, x => x[1])) }));
+  box.append(g, el('p', { class: 'note', text: `${fr.length.toLocaleString('en-US')} failed runs. ${S.eMode === 'tool' ? 'Tool or step where the run failed.' : 'Click a bar to filter.'}` }));
+}
+
+// ---------- F: retry effectiveness ----------
+function renderF() {
+  $('pF-range').textContent = `${dayLabel(S.from)}${S.to !== S.from ? '–' + dayLabel(S.to) : ''}`;
+  const ts = taskList.filter(t => taskPasses(t) && t.finished && !t.first.success && t.first.cat >= 0 && t.retries > 0);
+  const box = $('pF'); box.replaceChildren();
+  if (!ts.length) { box.append(el('p', { class: 'note', text: 'No retried tasks in this selection.' })); return; }
+  const by = new Map(); ts.forEach(t => { const c = t.first.cat; if (!by.has(c)) by.set(c, []); by.get(c).push(t); });
+  const rows = [...by.entries()].map(([c, l]) => ({ c, n: l.length, fixed: l.filter(t => t.eventual).length, spend: sum(l, t => t.retryCost), wasted: sum(l.filter(t => !t.eventual), t => t.retryCost) }))
+    .sort((a, b) => b.wasted - a.wasted);
+  const tbl = el('table', { class: 'rtable' });
+  tbl.append(el('thead', {}, el('tr', {}, ...['First failure', 'Retried', 'Fixed / not', 'Recovered', 'Wasted', 'Action'].map(h => el('th', { text: h })))));
+  const tb = el('tbody');
+  rows.forEach(r => { const rate = r.fixed / r.n, act = rate >= 0.7 ? 'keep' : rate >= 0.3 ? 'watch' : 'stop';
+    const tr = el('tr', { class: 'click', tabindex: 0, onclick: () => { S.cat = r.c; S.retried = true; update(); scrollToTable(); } },
+      el('td', { text: catName(r.c) }), el('td', { class: 'num', text: String(r.n) }),
+      el('td', {}, el('span', { class: 'split' }, el('i', { style: `width:${rate * 100}%;background:var(--good-fill)` }), el('i', { style: `width:${(1 - rate) * 100}%;background:var(--crit-fill)` }))),
+      el('td', { class: 'num ' + (act === 'stop' ? 'bad' : ''), text: pct(rate, 0) }), el('td', { class: 'num', text: usd(r.wasted) }),
+      el('td', {}, el('span', { class: 'act ' + act, text: act })));
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter') tr.click(); });
+    hover(tr, ev => showTip(ev, catName(r.c), [['var(--good-fill)', String(r.fixed), 'fixed by retry'], ['var(--crit-fill)', String(r.n - r.fixed), 'still failed'], [null, usd(r.spend), 'retry spend'], [null, usd(r.wasted), 'spent on tasks that still failed']]));
+    tb.append(tr); });
+  tbl.append(tb); box.append(tbl);
+}
+
+// ---------- G: cost of waste ----------
+function renderG() {
+  const rs = runs.filter(r => runPasses(r) && r.status !== 4);
+  const b = { useful: 0, failed: 0, wasted: 0, loops: 0 };
+  rs.forEach(r => { const t = r.taskObj;
+    if (r.success) b.useful += r.cost; else if (r.retry > 0 && !t.eventual) b.wasted += r.cost;
+    else if (r.steps >= D.max_steps) b.loops += r.cost; else b.failed += r.cost; });
+  const total = b.useful + b.failed + b.wasted + b.loops;
+  const box = $('pG'); box.replaceChildren();
+  const parts = [['useful', 'Successful runs', 'var(--series-2)'], ['failed', 'Failed attempts', 'var(--line-2)'], ['wasted', 'Retries that never succeeded', 'var(--crit-fill)'], ['loops', 'Runs that hit the step limit', 'var(--warn-fill)']];
+  const stack = el('div', { class: 'stack' });
+  parts.forEach(([k, lab, c]) => { if (!b[k]) return; const i = el('i', { style: `width:${b[k] / total * 100}%;background:${c}` });
+    hover(i, ev => showTip(ev, lab, [[c, usd(b[k]), pct(b[k] / total, 1) + ' of spend']])); stack.append(i); });
+  const wl = el('div', { class: 'wl' });
+  parts.forEach(([k, lab, c]) => wl.append(el('span', { class: 'sw', style: `background:${c}` }), el('span', { class: 'lb', text: lab }), el('span', { class: 'num', text: usd(b[k]) }), el('span', { class: 'num', style: 'color:var(--muted)', text: pct(b[k] / (total || 1), 0) })));
+  box.append(el('div', { class: 'num', style: 'font-size:13px;color:var(--ink-2)' }, 'Spend ', el('b', { style: 'color:var(--ink)', text: usd(total) }), ' · ', el('b', { class: 'bad', text: usd(b.wasted + b.loops) }), ' bought nothing'), stack, wl);
+  // cost per success trend
+  const a = single(); const days = []; for (let d = S.from; d <= S.to; d++) days.push(d);
+  const pts = days.map(d => ({ d, v: stats(taskList.filter(t => taskPasses(t) && t.day === d)).cps })).filter(p => p.v !== null);
+  if (pts.length > 1) {
+    const W = Math.max(240, box.clientWidth || 300), H = 96, m = { l: 34, r: 8, t: 14, b: 18 };
+    const cap = a >= 0 ? D.targets[a][1] : null; const hi = Math.max(...pts.map(p => p.v), cap || 0) * 1.1;
+    const x = d => m.l + (d - S.from) / Math.max(1, S.to - S.from) * (W - m.l - m.r), y = v => m.t + (1 - v / hi) * (H - m.t - m.b);
+    const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Cost per successful task by day' });
+    [0, hi / 2].forEach(v => { svg.append(sv('line', { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: 'var(--line)' }));
+      const t = sv('text', { x: m.l - 4, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = usd(v); svg.append(t); });
+    if (cap !== null) { svg.append(sv('line', { x1: m.l, x2: W - m.r, y1: y(cap), y2: y(cap), stroke: 'var(--crit-fill)', 'stroke-dasharray': '4 3' }));
+      const t = sv('text', { x: W - m.r, y: y(cap) - 4, 'text-anchor': 'end' }); t.textContent = `cap ${usd(cap)}`; svg.append(t); }
+    svg.append(sv('path', { d: pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.d).toFixed(1)} ${y(p.v).toFixed(1)}`).join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.75 }));
+    [pts[0], pts[pts.length - 1]].forEach(p => { const t = sv('text', { x: x(p.d), y: H - 4, 'text-anchor': p === pts[0] ? 'start' : 'end' }); t.textContent = dayLabel(p.d); svg.append(t); });
+    const hit = sv('rect', { x: m.l, y: 0, width: W - m.l - m.r, height: H, fill: 'transparent' });
+    hit.addEventListener('pointermove', ev => { const r = svg.getBoundingClientRect(); const px = (ev.clientX - r.left) * W / r.width;
+      let best = pts[0]; pts.forEach(p => { if (Math.abs(x(p.d) - px) < Math.abs(x(best.d) - px)) best = p; });
+      showTip(ev, dayLabel(best.d), [['var(--accent)', usd(best.v), 'per successful task'], ...(cap !== null ? [[null, usd(cap), 'cap']] : [])]); });
+    hit.addEventListener('pointerleave', hideTip); svg.append(hit);
+    box.append(el('div', { class: 'sub-h', text: a >= 0 ? 'Cost per successful task, daily, against the cap' : 'Cost per successful task, daily (pick one agent for its cap)' }), el('div', { class: 'chart' }, svg));
+  }
+}
+
+// ---------- H: latency ----------
+function renderH() {
+  const box = $('pH'); box.replaceChildren();
+  const rs = runs.filter(r => runPasses(r) && r.status === 0 && r.dur >= 0);
+  const by = A.map((n, a) => ({ a, n, v: rs.filter(r => r.agent === a).map(r => r.dur) })).filter(x => x.v.length);
+  const max = Math.max(1, ...by.map(x => pctl(x.v, 95)));
+  const g = el('div', { class: 'lat' });
+  by.forEach(x => { const p50 = pctl(x.v, 50), p95 = pctl(x.v, 95);
+    const trk = el('div', { class: 'trk' }, el('i', { style: `width:${p95 / max * 100}%;background:var(--series-2);opacity:.45` }), el('i', { style: `width:${p50 / max * 100}%;background:var(--series-2)` }));
+    hover(trk, ev => showTip(ev, x.n + ' · completed runs', [[null, p50 + ' s', 'p50'], [null, p95 + ' s', 'p95'], [null, String(x.v.length), 'runs']]));
+    g.append(el('div', { class: 'lab', text: x.n }), trk, el('div', { class: 'num', style: 'font-size:12px', text: `${p50} / ${p95} s` })); });
+  box.append(el('div', { class: 'sub-h', style: 'margin-top:0', text: 'Run duration, p50 (solid) and p95' }), g);
+  const okRuns = new Set(runs.filter(runPasses).map(r => r.i));
+  const tl = new Map(); D.tool_lat.forEach(([ri, ti, ms]) => { if (okRuns.has(ri)) { if (!tl.has(ti)) tl.set(ti, []); tl.get(ti).push(ms); } });
+  const tools = [...tl.entries()].map(([ti, v]) => ({ ti, p95: pctl(v, 95), n: v.length, to: D.tool_timeout[ti] })).map(x => ({ ...x, ratio: x.p95 / x.to })).sort((a, b) => b.ratio - a.ratio).slice(0, 4);
+  const g2 = el('div', { class: 'lat' });
+  tools.forEach(x => { const c = x.ratio >= 0.8 ? 'var(--crit-fill)' : x.ratio >= 0.5 ? 'var(--warn-fill)' : 'var(--series-2)';
+    const trk = el('div', { class: 'trk' }, el('i', { style: `width:${Math.min(100, x.ratio * 100)}%;background:${c}` }), el('b', { style: 'left:80%' }));
+    hover(trk, ev => showTip(ev, TOOLS[x.ti], [[c, (x.p95 / 1000).toFixed(1) + ' s', 'p95'], [null, (x.to / 1000) + ' s', 'timeout'], [null, String(x.n), 'successful calls']]));
+    g2.append(el('div', { class: 'lab mono', style: 'font-size:11.5px', text: TOOLS[x.ti] }), trk, el('div', { class: 'num ' + (x.ratio >= 0.8 ? 'bad' : ''), style: 'font-size:12px', text: pct(x.ratio, 0) })); });
+  box.append(el('div', { class: 'sub-h', text: 'Slowest tools: p95 as a share of their timeout (mark = 80%)' }), g2);
+}
+
+// ---------- I: failing runs ----------
+function tableRows() {
+  let rs = runs.filter(r => r.failed && r.cat >= 0 && runPasses(r));
+  if (S.cat >= 0) rs = rs.filter(r => (S.retried ? r.taskObj.first.cat === S.cat : r.cat === S.cat));
+  if (S.retried) rs = rs.filter(r => r.taskObj.retries > 0);
+  return rs.sort(S.sort === 'cost' ? (a, b) => b.cost - a.cost : (a, b) => b.t - a.t);
+}
+function renderI() {
+  const rs = tableRows(), box = $('pI'); box.replaceChildren();
+  $('pI-count').textContent = `${rs.length.toLocaleString('en-US')} failed runs in selection · click a row for detail`;
+  const tbl = el('table', { class: 'runs' });
+  const sortBtn = (k, lab) => el('button', { 'aria-pressed': String(S.sort === k), text: lab + (S.sort === k ? ' ↓' : ''), onclick: () => { S.sort = k; renderI(); } });
+  tbl.append(el('thead', {}, el('tr', {}, el('th', {}, sortBtn('time', 'Started')), el('th', { text: 'Agent' }), el('th', { text: 'Task type' }), el('th', { text: 'Deploy' }),
+    el('th', { text: 'Category' }), el('th', { text: 'Attempt' }), el('th', { text: 'Task outcome' }), el('th', {}, sortBtn('cost', 'Cost')), el('th', { text: 'Error' }))));
+  const tb = el('tbody');
+  rs.slice(0, S.shown).forEach(r => { const dt = D.detail[r.i] || {}; const t = r.taskObj;
+    const err = dt.err || (dt.steps && (dt.steps.find(s => s[0] === 2 && s[4]) || [])[4]) || '—';
+    const tr = el('tr', { tabindex: 0, onclick: () => openDrawer(r) },
+      el('td', { class: 'num', text: stamp(r.t) }), el('td', { text: A[r.agent] }), el('td', { text: TT[r.tt] }), el('td', { class: 'mono', text: short(r.deploy) }),
+      el('td', {}, catName(r.cat), el('span', { class: 'badge', text: dt.layer === 'llm' ? 'model' : 'rules' })),
+      el('td', { class: 'num', text: r.retry === 0 ? 'first' : `retry ${r.retry}` }),
+      el('td', { class: t.eventual ? 'ok' : 'bad', text: t.eventual ? 'recovered' : 'failed' }),
+      el('td', { class: 'num', text: usd(r.cost) }), el('td', { class: 'err mono', text: err.length > 90 ? err.slice(0, 88) + '…' : err }));
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter') openDrawer(r); });
+    tb.append(tr); });
+  tbl.append(tb); box.append(tbl);
+  const more = $('pI-more'); more.replaceChildren();
+  if (rs.length > S.shown) more.append(el('button', { class: 'btn', text: `Show ${Math.min(20, rs.length - S.shown)} more`, onclick: () => { S.shown += 20; renderI(); } }), `Showing ${S.shown} of ${rs.length.toLocaleString('en-US')}`);
+}
+const scrollToTable = () => $('pI').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+
+// ---------- J: drawer ----------
+let lastFocus = null;
+function openDrawer(r) {
+  lastFocus = document.activeElement;
+  const dt = D.detail[r.i] || { steps: [] }, t = r.taskObj, dr = $('drawer'); dr.replaceChildren();
+  dr.append(el('div', { class: 'dh' }, el('div', {}, el('div', { style: 'color:var(--muted);font-size:12px', text: 'Failed run' }), el('h3', { class: 'mono', text: dt.id || D.run_ids[r.i] })),
+    el('button', { class: 'btn', text: 'Close', onclick: closeDrawer })));
+  const dl = el('dl', { class: 'dl' });
+  [['Agent', A[r.agent]], ['Task', `${D.task_ids[r.task]} · ${TT[r.tt]}`], ['Deploy', DEP[r.deploy]], ['Started', stamp(r.t) + ' UTC'],
+   ['Status', `${D.status[r.status]} · output check ${D.outcome[r.outcome]}`], ['Attempt', r.retry === 0 ? 'first attempt' : `retry ${r.retry} (${D.triggers[r.trigger].replace('_', ' ')})`],
+   ['Cost', `${usd(r.cost)} · ${r.tok.toLocaleString('en-US')} input tokens · ${r.steps} steps`]].forEach(([k, v]) => dl.append(el('dt', { text: k }), el('dd', { text: v })));
+  dr.append(dl);
+  dr.append(el('div', { class: 'sec', text: 'Classified as' }), el('div', {}, el('b', { text: catName(r.cat) }),
+    el('span', { style: 'color:var(--ink-2)', text: ` · ${dt.layer === 'llm' ? 'model fallback' : 'rules'} · ${dt.rule || ''} · confidence ${dt.conf ?? '–'} · taxonomy ${dt.tax || '–'}` })));
+  dr.append(el('div', { class: 'sec', text: 'Retry chain' }));
+  const chain = el('div', { class: 'chain' });
+  t.runs.forEach((x, k) => { if (k) chain.append(el('span', { style: 'color:var(--muted)', text: '→' }));
+    const lab = x.success ? 'succeeded' : x.status === 3 ? 'cancelled' : x.cat >= 0 ? catName(x.cat) : D.status[x.status];
+    chain.append(el('span', { class: 'n' + (x === r ? ' cur' : '') }, el('span', { class: x.success ? 'ok' : 'bad', text: '● ' }), `${x.retry === 0 ? 'first' : 'retry ' + x.retry}: ${lab}`)); });
+  dr.append(chain, el('p', { class: 'note', text: t.eventual ? 'The task eventually succeeded.' : `The task never succeeded. Retries cost ${usd(t.retryCost)}.` }));
+  dr.append(el('div', { class: 'sec', text: `Steps (${dt.steps.length})` }));
+  const total = Math.max(1, sum(dt.steps, s => s[2])); let acc = 0;
+  const sg = el('div', { class: 'steps' });
+  dt.steps.forEach((s, k) => { const c = s[3] === 0 ? 'var(--series-2)' : 'var(--crit-fill)';
+    const name = s[1] >= 0 ? TOOLS[s[1]] : D.step_types[s[0]].replace('_', ' ');
+    const tl = el('div', { class: 'tl' }, el('i', { style: `left:${acc / total * 100}%;width:${Math.max(0.6, s[2] / total * 100)}%;background:${c}` }));
+    hover(tl, ev => showTip(ev, `Step ${k + 1} · ${name}`, [[c, (s[2] / 1000).toFixed(2) + ' s', D.step_status[s[3]]], [null, s[5].toLocaleString('en-US'), 'input tokens'], [null, usd(s[6]), 'cost']]));
+    acc += s[2];
+    sg.append(el('span', { class: 'num', style: 'color:var(--muted)', text: String(k + 1) }), el('span', { class: 'mono', style: 'font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', text: name }), tl,
+      el('span', { class: 'num ' + (s[3] ? 'bad' : ''), style: 'font-size:11.5px', text: (s[2] / 1000).toFixed(1) + ' s' })); });
+  dr.append(sg);
+  const msgs = dt.steps.filter(s => s[4]).map(s => s[4]);
+  if (dt.err || msgs.length) dr.append(el('div', { class: 'sec', text: 'Error and check detail' }), el('pre', { class: 'errbox mono', text: [dt.err, ...msgs.filter(m => m !== dt.err)].filter(Boolean).join('\n\n') }));
+  dr.append(el('p', { class: 'note', text: 'Full prompts and tool payloads stay in your tracing tool; ARC links to them by run ID.' }));
+  $('scrim').hidden = false; dr.hidden = false; dr.querySelector('button').focus();
+}
+function closeDrawer() { $('drawer').hidden = true; $('scrim').hidden = true; hideTip(); if (lastFocus) lastFocus.focus(); }
+$('scrim').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('drawer').hidden) closeDrawer(); });
+
+// ---------- render ----------
+function update() {
+  S.shown = 20; hideTip();
+  buildFilters();
+  const st = stats(taskList.filter(t => taskPasses(t)));
+  renderA(); renderB(st); renderC(); renderD(); renderE(); renderF(); renderG(); renderH(); renderI();
+}
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderD(); renderG(); }, 150); });
+update();
+})();
+</script>
