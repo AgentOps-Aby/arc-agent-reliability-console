@@ -4,7 +4,8 @@ A reliability dashboard for AI agents running in production: it tracks task succ
 auto-classifies failures, and measures whether retries actually help.
 
 **Live dashboard:** open [`dashboard/index.html`](dashboard/index.html) in a browser, or see the hosted version
-(GitHub Pages link below once enabled).
+https://agentops-aby.github.io/arc-agent-reliability-console/ 
+
 
 > Portfolio project by Apoorva Patil. All data is **synthetic** (5,122 runs, 4 agents, September 2026) with six
 > planted incidents and an answer key, so the dashboard and classifier can be graded against ground truth.
